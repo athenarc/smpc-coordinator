@@ -7,6 +7,7 @@ const helmet = require('helmet')
 const cors = require('cors')
 const routes = require('./routes')
 const logger = require('./config/winston')
+const { ErrorHandler, HTTPErrorHandler } = require('./middlewares/error')
 
 const app = express()
 
@@ -20,6 +21,9 @@ const app = express()
   for (const url in routes) {
     app.use(url, routes[url])
   }
+
+  app.use(HTTPErrorHandler)
+  app.use(ErrorHandler)
 
   app.listen(LISTEN_PORT, () => {
     logger.info('SMPC Coordinator running on port %d', LISTEN_PORT)
