@@ -1,0 +1,27 @@
+{
+  "name": "smpc-coordinator",
+  "version": "1.0.0",
+  "description": "Coordinator SMPC framework",
+  "main": "server.js",
+  "scripts": {
+    "start": "nodemon --watch . -watch server.js",
+    "serve": "node server.js",
+    "lint": "standard"
+  },
+  "engines": {
+    "node": ">=8.11.4"
+  },
+  "contributors": [
+    {
+      "name": "Christos Nasikas",
+      "email": "xristosnasikas@gmail.com"
+    },
+  ],
+  "repository": "github:Athena-MHMD/smpc-coordinator",
+  "homepage": "https://github.com/Athena-MHMD/smpc-coordinator",
+  "bugs": "https://github.com/Athena-MHMD/smpc-coordinator/issues",
+  "license": "MIT",
+  "standard": {
+    "ignore": []
+  }
+}
