@@ -15,7 +15,6 @@ const app = express()
   app.use(helmet())
   app.use(cors({ methods: ['GET', 'POST'] }))
   app.use(bodyParser.json())
-  app.use(bodyParser.urlencoded({ extended: true }))
 
   for (const url in routes) {
     app.use(url, routes[url])
