@@ -16,6 +16,10 @@
     "email": "xristosnasikas@gmail.com",
     "url": "https://christosnasikas.com/"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Athena-MHMD/smpc-coordinator.git"
+  },
   "homepage": "https://github.com/Athena-MHMD/smpc-coordinator",
   "bugs": "https://github.com/Athena-MHMD/smpc-coordinator/issues",
   "license": "MIT",
