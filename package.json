@@ -11,13 +11,11 @@
   "engines": {
     "node": ">=8.11.4"
   },
-  "contributors": [
-    {
-      "name": "Christos Nasikas",
-      "email": "xristosnasikas@gmail.com"
-    },
-  ],
-  "repository": "github:Athena-MHMD/smpc-coordinator",
+  "author": {
+    "name": "Christos Nasikas",
+    "email": "xristosnasikas@gmail.com",
+    "url": "https://christosnasikas.com/"
+  },
   "homepage": "https://github.com/Athena-MHMD/smpc-coordinator",
   "bugs": "https://github.com/Athena-MHMD/smpc-coordinator/issues",
   "license": "MIT",
