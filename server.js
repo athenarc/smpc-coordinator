@@ -12,6 +12,7 @@ const app = express()
 
 ;(() => {
   app.set('trust proxy', '127.0.0.1')
+  app.disable('x-powered-by')
   app.use(helmet())
   app.use(cors({ methods: ['GET', 'POST'] }))
   app.use(bodyParser.json())
