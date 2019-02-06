@@ -78,3 +78,8 @@ typings/
 
 # DynamoDB Local files
 .dynamodb/
+
+# App specifics
+
+smpc-db
+smpc-cache
