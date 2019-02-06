@@ -1,14 +1,17 @@
-const winston = require('winston')
 const express = require('express')
 
-const router = express.Router()
+const { createSimpleSMPCRouter } = require('../helpers')
+const { SMPCEngine } = require('../smpc/SMPC')
 
-router.get('/queue', async (req, res, next) => {})
+const Sharemind = require('../smpc/Sharemind')
 
-router.get('/histogram/numerical', async (req, res, next) => {})
+let router = express.Router()
+const smpc = new SMPCEngine(new Sharemind())
 
 router.get('/histogram/categorical', async (req, res, next) => {})
 
-router.get('/decisionTree', async (req, res, next) => {})
+router = createSimpleSMPCRouter(router, '/histogram/numerical', smpc)
+router = createSimpleSMPCRouter(router, '/histogram/categorical', smpc)
+router = createSimpleSMPCRouter(router, '/decisionTree', smpc)
 
 module.exports = router
