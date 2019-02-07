@@ -61,6 +61,6 @@ router.get('/results/:id', async (req, res, next) => {
 
 router = createSimpleSMPCRouter(router, '/histogram/numerical', smpc)
 router = createSimpleSMPCRouter(router, '/histogram/categorical', smpc)
-router = createSimpleSMPCRouter(router, '/decisionTree', smpc)
+router = createSimpleSMPCRouter(router, '/decision_tree', smpc)
 
 module.exports = router
