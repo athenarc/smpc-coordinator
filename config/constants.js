@@ -2,10 +2,12 @@ const status = {
   PENDING: 0,
   PROCESSING: 1,
   COMPLETED: 2,
+  FAILED: 3,
   properties: {
     0: { 'msg': 'pending' },
     1: { 'msg': 'processing' },
-    2: { 'msg': 'completed' }
+    2: { 'msg': 'completed' },
+    3: { 'msg': 'failed' }
   }
 }
 
