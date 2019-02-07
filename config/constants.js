@@ -25,6 +25,6 @@ const step = {
 }
 
 module.exports = {
-  status,
-  step
+  status: Object.freeze(status),
+  step: Object.freeze(step)
 }
