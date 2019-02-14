@@ -9,7 +9,7 @@
     "lint": "standard"
   },
   "engines": {
-    "node": ">=8.11.4"
+    "node": ">=8.11.1"
   },
   "author": {
     "name": "Christos Nasikas",
