@@ -5,7 +5,7 @@ const { db } = require('./db')
 const { status } = require('./config/constants')
 
 const createSimpleSMPCRouter = (router, path, smpc) => {
-  router.get(path, async (req, res, next) => {
+  router.post(path, async (req, res, next) => {
     try {
       const id = uuidv4()
       const location = `/api/smpc/queue/${id}`
