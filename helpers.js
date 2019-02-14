@@ -13,7 +13,7 @@ const createSimpleSMPCRouter = (router, path, smpc) => {
       db.put(id, { 'status': status.PENDING })
 
       res.set('Location', location)
-      res.status(202).json({ location })
+      res.status(202).json({ location, id, status: status.properties[status.PENDING].msg })
 
       smpc.execute()
     } catch (err) {
