@@ -7,10 +7,10 @@ const { HTTPError } = require('../errors')
 const { createSimpleSMPCRouter } = require('../helpers')
 const { SMPCEngine } = require('../smpc/SMPC')
 
-const Sharemind = require('../smpc/Sharemind')
+const ScaleMamba = require('../smpc/ScaleMamba')
 
 let router = express.Router()
-const smpc = new SMPCEngine(new Sharemind())
+const smpc = new SMPCEngine(new ScaleMamba())
 
 router.get('/queue/:id', async (req, res, next) => {
   try {
