@@ -1,6 +1,8 @@
 require('dotenv').config()
 
 const LISTEN_PORT = process.env.PORT || 3000
+
+const _ = require('lodash')
 const express = require('express')
 const bodyParser = require('body-parser')
 const helmet = require('helmet')
@@ -10,6 +12,10 @@ const logger = require('./config/winston')
 const { ErrorHandler, HTTPErrorHandler } = require('./middlewares/error')
 
 const app = express()
+
+if (_.isEmpty(process.env.SMPC_ENGINE)) {
+  throw new Error('SMPC Engine absolute path not defined!')
+}
 
 ;(() => {
   app.set('trust proxy', '127.0.0.1')
