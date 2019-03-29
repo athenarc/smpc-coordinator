@@ -5,10 +5,8 @@ const { db } = require('../db')
 const { status } = require('../config/constants')
 const { HTTPError } = require('../errors')
 const { createSimpleSMPCRouter } = require('../helpers')
-const { SMPC } = require('../smpc/SMPC')
 
 let router = express.Router()
-const smpc = new SMPC()
 
 router.get('/queue/:id', async (req, res, next) => {
   try {
@@ -58,8 +56,8 @@ router.get('/results/:id', async (req, res, next) => {
   res.status(200).json()
 })
 
-router = createSimpleSMPCRouter(router, '/histogram/numerical', smpc)
-router = createSimpleSMPCRouter(router, '/histogram/categorical', smpc)
-router = createSimpleSMPCRouter(router, '/decision_tree', smpc)
+router = createSimpleSMPCRouter(router, '/histogram/numerical')
+router = createSimpleSMPCRouter(router, '/histogram/categorical')
+router = createSimpleSMPCRouter(router, '/decision_tree')
 
 module.exports = router

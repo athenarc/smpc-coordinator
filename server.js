@@ -8,10 +8,12 @@ const bodyParser = require('body-parser')
 const helmet = require('helmet')
 const cors = require('cors')
 const routes = require('./routes')
+const queue = require('./queue')
 const logger = require('./config/winston')
 const { ErrorHandler, HTTPErrorHandler } = require('./middlewares/error')
 
 const app = express()
+app.queue = queue
 
 if (_.isEmpty(process.env.SMPC_ENGINE)) {
   throw new Error('SMPC Engine absolute path not defined!')
