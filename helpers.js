@@ -24,6 +24,16 @@ const createSimpleSMPCRouter = (router, path, smpc) => {
   return router
 }
 
+const pack = (msg) => {
+  return JSON.stringify(msg)
+}
+
+const unpack = (msg) => {
+  return JSON.parse(msg)
+}
+
 module.exports = {
-  createSimpleSMPCRouter
+  createSimpleSMPCRouter,
+  pack,
+  unpack
 }
