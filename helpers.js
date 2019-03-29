@@ -15,7 +15,7 @@ const createSimpleSMPCRouter = (router, path, smpc) => {
       res.set('Location', location)
       res.status(202).json({ location, id, status: status.properties[status.PENDING].msg })
 
-      smpc.execute()
+      smpc.compute()
     } catch (err) {
       next(err)
     }

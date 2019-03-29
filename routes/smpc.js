@@ -5,12 +5,10 @@ const { db } = require('../db')
 const { status } = require('../config/constants')
 const { HTTPError } = require('../errors')
 const { createSimpleSMPCRouter } = require('../helpers')
-const { SMPCEngine } = require('../smpc/SMPC')
-
-const ScaleMamba = require('../smpc/ScaleMamba')
+const { SMPC } = require('../smpc/SMPC')
 
 let router = express.Router()
-const smpc = new SMPCEngine(new ScaleMamba())
+const smpc = new SMPC()
 
 router.get('/queue/:id', async (req, res, next) => {
   try {
