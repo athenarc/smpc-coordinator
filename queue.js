@@ -8,6 +8,9 @@ const queue = new Queue('smpc', { delayedDebounce: 3000, sendEvents: false })
 const addToQueue = ({ id }) => {
   const job = queue.createJob({ id })
   job.setId(id)
+  job.backoff('fixed', 1000)
+
+  // Consider changing to promise
   job.save((err, job) => {
     if (err) {
       throw new HTTPError(500, `Unable to save job ${job.id} on queue`)
