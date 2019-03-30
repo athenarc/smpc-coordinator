@@ -1,9 +1,10 @@
 const Queue = require('bee-queue')
 const { compute } = require('./smpc/smpc')
 const { HTTPError } = require('./errors')
+const { db } = require('./db')
+const { status } = require('./config/constants')
 
-// sendEvents: boolean. Disable if this worker does not need to send job events back to other queues.
-const queue = new Queue('smpc', { delayedDebounce: 3000, sendEvents: false })
+const queue = new Queue('smpc', { delayedDebounce: 3000 })
 
 const addToQueue = ({ id }) => {
   const job = queue.createJob({ id })
@@ -20,13 +21,16 @@ const addToQueue = ({ id }) => {
   job.on('succeeded', (result) => onSucceeded(job, result))
 }
 
-const onSucceeded = (job, results) => {
+const onSucceeded = async (job, results) => {
   console.log(`Done: ${job.id}: Results: ${results}`)
+  await db.put(job.id, { 'status': status.COMPLETED, results })
 }
 
 queue.on('ready', () => {
   queue.process(async (job) => {
     console.log(`Processing job ${job.id}`)
+
+    await db.put(job.id, { 'status': status.PROCESSING })
     const results = await compute(job)
     return results
   })
@@ -42,8 +46,9 @@ queue.on('retrying', (job, err) => {
   console.log(`Job ${job.id} failed with error ${err.message} but is being retried!`)
 })
 
-queue.on('failed', (job, err) => {
+queue.on('failed', async (job, err) => {
   console.log(`Job ${job.id} failed with error ${err.message}`)
+  await db.put(job.id, { 'status': status.FAILED })
 })
 
 queue.on('stalled', (jobId) => {
