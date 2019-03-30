@@ -4,7 +4,7 @@ const { compute } = require('./smpc/smpc')
 
 const addToQueue = ({ id }) => {
   const job = queue.createJob({ id })
-  job.save()
+  job.setId(id)
 
   job.on('succeeded', (result) => onSucceeded(job, result))
 }
