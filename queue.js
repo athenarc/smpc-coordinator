@@ -20,11 +20,14 @@ const onSucceeded = (job, results) => {
   console.log(`Done: ${job.id}: Results: ${results}`)
 }
 
-// Process jobs from as many servers or processes as you like
-queue.process(async (job, done) => {
-  console.log(`Processing job ${job.id}`)
-  const results = await compute()
-  return done(null, results)
+queue.on('ready', () => {
+  queue.process(async (job) => {
+    console.log(`Processing job ${job.id}`)
+    const results = await compute(job)
+    return results
+  })
+
+  console.log('Processing jobs...')
 })
 
 module.exports = {
