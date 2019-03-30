@@ -30,6 +30,22 @@ queue.on('ready', () => {
   console.log('Processing jobs...')
 })
 
+queue.on('error', (err) => {
+  console.log(`A queue error happened: ${err.message}`)
+})
+
+queue.on('retrying', (job, err) => {
+  console.log(`Job ${job.id} failed with error ${err.message} but is being retried!`)
+})
+
+queue.on('failed', (job, err) => {
+  console.log(`Job ${job.id} failed with error ${err.message}`)
+})
+
+queue.on('stalled', (jobId) => {
+  console.log(`Job ${jobId} stalled and will be reprocessed`)
+})
+
 module.exports = {
   queue,
   addToQueue
