@@ -1,9 +1,9 @@
 const Computation = require('./Computation')
 
-const compute = async () => {
-  const computation = new Computation()
+const compute = async (job) => {
+  const computation = new Computation(job)
   let out = await computation.execute()
-  console.log(out)
+  return out
 }
 module.exports = {
   compute

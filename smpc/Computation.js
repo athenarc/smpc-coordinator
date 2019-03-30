@@ -9,7 +9,9 @@ const WebSocket = require('ws')
 const { pack, unpack } = require('../helpers')
 
 class Computation {
-  constructor () {
+  constructor (job) {
+    this.job = job
+
     this.players = [
       { address: PLAYER_1, socket: null },
       { address: PLAYER_2, socket: null },
