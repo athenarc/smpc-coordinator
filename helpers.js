@@ -2,6 +2,7 @@ const uuidv4 = require('uuid/v4')
 const winston = require('winston')
 
 const { status } = require('./config/constants')
+const { db } = require('./db')
 
 const createSimpleSMPCRouter = (router, path) => {
   const { addToQueue } = require('./queue')
@@ -14,6 +15,7 @@ const createSimpleSMPCRouter = (router, path) => {
       res.set('Location', location)
       res.status(202).json({ location, id, status: status.properties[status.PENDING].msg })
 
+      await db.put(id, { 'status': status.PENDING })
       addToQueue({ id })
     } catch (err) {
       next(err)
