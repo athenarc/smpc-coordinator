@@ -2,7 +2,8 @@ const Queue = require('bee-queue')
 const { compute } = require('./smpc/smpc')
 const { HTTPError } = require('./errors')
 
-const queue = new Queue('smpc', { delayedDebounce: 3000 })
+// sendEvents: boolean. Disable if this worker does not need to send job events back to other queues.
+const queue = new Queue('smpc', { delayedDebounce: 3000, sendEvents: false })
 
 const addToQueue = ({ id }) => {
   const job = queue.createJob({ id })
