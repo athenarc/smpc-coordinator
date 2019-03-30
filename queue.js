@@ -1,7 +1,8 @@
 const Queue = require('bee-queue')
-const queue = new Queue('smpc')
 const { compute } = require('./smpc/smpc')
 const { HTTPError } = require('./errors')
+
+const queue = new Queue('smpc', { delayedDebounce: 3000 })
 
 const addToQueue = ({ id }) => {
   const job = queue.createJob({ id })
