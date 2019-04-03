@@ -8,6 +8,7 @@ const CLIENT_3 = process.env.CLIENT_3 || 'ws://localhost:3010'
 const WebSocket = require('ws')
 const EventEmitter = require('events')
 const { pack, unpack } = require('../helpers')
+const { step } = require('../config/constants')
 
 class Computation {
   constructor (job) {
@@ -29,7 +30,8 @@ class Computation {
     this.state = {
       listen: 0,
       import: 0,
-      exit: 0
+      exit: 0,
+      step: step.INIT
     }
   }
 
