@@ -1,5 +1,4 @@
 const express = require('express')
-const _ = require('lodash')
 
 const { db } = require('../db')
 const { status } = require('../config/constants')
@@ -11,10 +10,6 @@ let router = express.Router()
 router.get('/queue/:id', async (req, res, next) => {
   try {
     let value = await db.get(req.params.id)
-
-    if (_.isUndefined(value.status)) {
-      throw new HTTPError(500, 'An error was occured')
-    }
 
     if (value.status === status.PENDING || value.status === status.PROCESSING) {
       return res.status(200).json({
@@ -39,10 +34,6 @@ router.get('/queue/:id', async (req, res, next) => {
 router.get('/results/:id', async (req, res, next) => {
   try {
     let value = await db.get(req.params.id)
-
-    if (_.isUndefined(value.results)) {
-      throw new HTTPError(404, 'Not found')
-    }
 
     return res.status(200).json({ results: value.results })
   } catch (err) {
