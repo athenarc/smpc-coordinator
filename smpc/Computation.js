@@ -33,6 +33,134 @@ class Computation {
       exit: 0,
       step: step.INIT
     }
+
+    this.resolve = null
+    this.reject = null
+    this._register()
+  }
+
+  _execute (resolve, reject) {
+    console.log('Initiating SMPC Engine...')
+    this.resolve = resolve
+    this.reject = reject
+    this.setupPlayers()
+  }
+
+  _register () {
+    this.emitter.on('listen', this.listen.bind(this))
+    this.emitter.on('exit', this.handleExit.bind(this))
+    this.emitter.on('computation-finished', this.handleComputationFinished.bind(this))
+    this.emitter.on('importation-finished', this.handleImportationFinished.bind(this))
+  }
+
+  setupPlayers () {
+    for (const [index, p] of this.players.entries()) {
+      this.players[index].socket = new WebSocket(p.address)
+      this.players[index].socket._index = index
+      const ws = this.players[index].socket
+
+      ws.on('open', () => {
+        console.log('Connected to player.')
+        ws.send(pack({ message: 'start' }))
+      })
+
+      ws.on('close', (code, reason) => {
+        console.log('Disconnected from player.')
+        this.players[ws._index].socket = null
+
+        if (this.state.step !== step.COMPUTATION_END) {
+          this.reject(new Error(`Unexpected close with code: ${code} and reason: ${reason}`))
+        }
+      })
+
+      ws.on('message', (data) => {
+        data = unpack(data)
+        this.handleMessage('player', ws, data)
+      })
+    }
+  }
+
+  setupClients () {
+    for (const [index, c] of this.clients.entries()) {
+      this.clients[index].socket = new WebSocket(c.address)
+      this.clients[index].socket._index = index
+      const ws = this.clients[index].socket
+
+      ws.on('open', () => {
+        console.log('Connected to client.')
+        ws.send(pack({ message: 'import' }))
+      })
+
+      ws.on('close', (code, reason) => {
+        console.log('Disconnected from client.')
+        this.clients[ws._index].socket = null
+        if (this.state.step !== step.IMPORT_END) {
+          this.reject(new Error(`Unexpected close with code: ${code} and reason: ${reason}`))
+        }
+      })
+
+      ws.on('message', (data) => {
+        data = unpack(data)
+        this.handleMessage('client', ws, data)
+      })
+    }
+  }
+
+  handleMessage (entity, ws, data) {
+    switch (data.message) {
+      case 'listen':
+        this.emitter.emit('listen', { entity, ws, data })
+        break
+      case 'exit':
+        this.emitter.emit('exit', { entity, ws, data })
+        break
+      case 'error':
+        this.handleError({ data })
+        break
+      default:
+        console.log(data)
+    }
+  }
+
+  handleError ({ data }) {
+    this.reject(new Error('An error has occured!'))
+  }
+
+  handleExit ({ entity, data }) {
+    if (data.code !== 0 || data.errors.length > 0) {
+      this.reject(data.errors)
+      return
+    }
+
+    switch (entity) {
+      case 'player':
+        this.state.exit += 1
+        if (this.state.exit === this.players.length) {
+          this.emitter.emit('computation-finished', { data })
+        }
+        break
+      case 'client':
+        this.state.import += 1
+        if (this.state.import === this.clients.length) {
+          this.emitter.emit('importation-finished', {})
+        }
+        break
+      default:
+    }
+  }
+
+  handleComputationFinished ({ data }) {
+    console.log('Computation Finished')
+    this.state.step = step.COMPUTATION_END
+    this.state.exit = 0
+    this.cleanUpPlayers()
+    this.resolve(data.message)
+  }
+
+  handleImportationFinished () {
+    console.log('Importation Finished')
+    this.state.step = step.IMPORT_END
+    this.cleanUpClients()
   }
 
   execute () {
@@ -45,80 +173,13 @@ class Computation {
     }
   }
 
-  _execute (resolve, reject) {
-    console.log('Initiating SMPC Engine...')
-
-    for (const [index, p] of this.players.entries()) {
-      this.players[index].socket = new WebSocket(p.address)
-      this.players[index].socket._index = index
-      const ws = this.players[index].socket
-
-      ws.on('open', () => {
-        console.log('Connected to player.')
-        ws.send(pack({ message: 'start' }))
-      })
-
-      ws.on('close', () => {
-        console.log('Disconnected from player.')
-        this.players[ws._index].socket = null
-      })
-
-      ws.on('message', (data) => {
-        data = unpack(data)
-
-        if (data.message === 'listen') {
-          this.listen(ws)
-        }
-
-        if (data.message === 'exit') {
-          this.state.exit += 1
-          if (this.state.exit === this.players.length) {
-            console.log('Computation Finished')
-            this.state.exit = 0
-            this.cleanUpPlayers()
-            resolve('Finished!')
-          }
-        }
-      })
-    }
-  }
-
-  listen (ws) {
+  listen () {
     this.state.listen += 1
     if (this.state.listen === this.players.length) {
       console.log('Players are listening...')
+      this.state.step = step.IMPORT_START
+      this.setupClients()
       this.state.listen = 0
-      this.importData(ws)
-    }
-  }
-
-  importData (ws) {
-    for (const [index, c] of this.clients.entries()) {
-      this.clients[index].socket = new WebSocket(c.address)
-      this.clients[index].socket._index = index
-      const ws = this.clients[index].socket
-
-      ws.on('open', () => {
-        console.log('Connected to client.')
-        ws.send(pack({ message: 'import' }))
-      })
-
-      ws.on('close', () => {
-        console.log('Disconnected from client.')
-        this.clients[ws._index].socket = null
-      })
-
-      ws.on('message', (data) => {
-        data = unpack(data)
-
-        if (data.message === 'exit') {
-          this.state.import += 1
-          if (this.state.import === this.clients.length) {
-            console.log('Importation Finished')
-            this.cleanUpClients()
-          }
-        }
-      })
     }
   }
 
