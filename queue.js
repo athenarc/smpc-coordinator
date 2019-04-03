@@ -46,8 +46,9 @@ queue.on('error', (err) => {
   console.log(`A queue error happened: ${err.message}`)
 })
 
-queue.on('retrying', (job, err) => {
+queue.on('retrying', async (job, err) => {
   console.log(`Job ${job.id} failed with error ${err.message} but is being retried!`)
+  await db.put(job.id, { 'status': status.PENDING })
 })
 
 queue.on('failed', async (job, err) => {
@@ -55,8 +56,9 @@ queue.on('failed', async (job, err) => {
   await db.put(job.id, { 'status': status.FAILED })
 })
 
-queue.on('stalled', (jobId) => {
+queue.on('stalled', async (jobId) => {
   console.log(`Job ${jobId} stalled and will be reprocessed`)
+  await db.put(jobId, { 'status': status.PENDING })
 })
 
 module.exports = {
