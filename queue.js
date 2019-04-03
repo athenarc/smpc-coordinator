@@ -29,10 +29,14 @@ const onSucceeded = async (job, results) => {
 queue.on('ready', () => {
   queue.process(async (job) => {
     console.log(`Processing job ${job.id}`)
-
-    await db.put(job.id, { 'status': status.PROCESSING })
-    const results = await compute(job)
-    return results
+    try {
+      await db.put(job.id, { 'status': status.PROCESSING })
+      const results = await compute(job)
+      return results
+    } catch (e) {
+      console.error(e)
+      throw new Error(e.message)
+    }
   })
 
   console.log('Processing jobs...')
