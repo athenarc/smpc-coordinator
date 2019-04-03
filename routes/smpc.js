@@ -35,7 +35,11 @@ router.get('/results/:id', async (req, res, next) => {
   try {
     let value = await db.get(req.params.id)
 
-    return res.status(200).json({ results: value.results })
+    return res.status(200).json({
+      id: req.params.id,
+      status: status.properties[value.status].msg,
+      results: value.results
+    })
   } catch (err) {
     if (err.notFound) {
       next(new HTTPError(404, 'Not found'))
