@@ -6,11 +6,13 @@ const CLIENT_2 = process.env.CLIENT_2 || 'ws://localhost:3009'
 const CLIENT_3 = process.env.CLIENT_3 || 'ws://localhost:3010'
 
 const WebSocket = require('ws')
+const EventEmitter = require('events')
 const { pack, unpack } = require('../helpers')
 
 class Computation {
   constructor (job) {
     this.job = job
+    this.emitter = new EventEmitter()
 
     this.players = [
       { address: PLAYER_1, socket: null },
