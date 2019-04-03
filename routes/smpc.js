@@ -11,7 +11,7 @@ router.get('/queue/:id', async (req, res, next) => {
   try {
     let value = await db.get(req.params.id)
 
-    if (value.status === status.PENDING || value.status === status.PROCESSING) {
+    if (value.status !== status.COMPLETED) {
       return res.status(200).json({
         status: status.properties[value.status].msg,
         id: req.params.id
