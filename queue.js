@@ -39,7 +39,7 @@ queue.on('ready', () => {
     }
   })
 
-  console.log('Processing jobs...')
+  console.log('Start processing jobs...')
 })
 
 queue.on('error', (err) => {
