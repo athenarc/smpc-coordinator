@@ -215,7 +215,9 @@ class Computation {
 
   sendToAll (message, entities) {
     for (const e of entities) {
-      e.socket.send(message) // Assume message is already packed. Message must be packed beforehand to avoid expessive call to JSON API
+      if (e.socket && e.socket.readyState === WebSocket.OPEN) {
+        e.socket.send(message) // Assume message is already packed. Message must be packed beforehand to avoid expessive call to JSON API
+      }
     }
   }
 
@@ -239,7 +241,9 @@ class Computation {
 
   cleanUp (entities) {
     for (const e of entities) {
-      e.socket.terminate()
+      if (e.socket) {
+        e.socket.terminate()
+      }
     }
   }
 }
