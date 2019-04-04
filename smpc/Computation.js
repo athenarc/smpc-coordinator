@@ -28,11 +28,13 @@ class Computation {
     ]
 
     this.state = {
+      dataSizeReceived: 0,
       compiled: 0,
       listen: 0,
       import: 0,
       exit: 0,
-      step: step.INIT
+      step: step.INIT,
+      dataSize: 0
     }
 
     this.resolve = null
@@ -45,9 +47,11 @@ class Computation {
     this.resolve = resolve
     this.reject = reject
     this.setupPlayers()
+    this.setupClients()
   }
 
   _register () {
+    this.emitter.on('data-size-received', this.handleDataSize.bind(this))
     this.emitter.on('compilation-ended', this.handleCompilation.bind(this))
     this.emitter.on('listen', this.listen.bind(this))
     this.emitter.on('exit', this.handleExit.bind(this))
@@ -63,7 +67,6 @@ class Computation {
 
       ws.on('open', () => {
         console.log('Connected to player.')
-        ws.send(pack({ message: 'compile', mpc: { id: this.job.id, name: 'sedp', dataSize: 13 } }))
       })
 
       ws.on('close', (code, reason) => {
@@ -90,7 +93,7 @@ class Computation {
 
       ws.on('open', () => {
         console.log('Connected to client.')
-        ws.send(pack({ message: 'import' }))
+        ws.send(pack({ message: 'data-size' }))
       })
 
       ws.on('close', (code, reason) => {
@@ -110,6 +113,9 @@ class Computation {
 
   handleMessage (entity, ws, data) {
     switch (data.message) {
+      case 'data-size':
+        this.emitter.emit('data-size-received', { entity, ws, data })
+        break
       case 'compilation-ended':
         this.emitter.emit('compilation-ended', { entity, ws, data })
         break
@@ -151,6 +157,26 @@ class Computation {
         }
         break
       default:
+    }
+  }
+  handleDataSize ({ data }) {
+    if (data.errors && data.errors.length > 0) {
+      this.reject(data.errors)
+      return
+    }
+
+    if (isNaN(Number(data.dataSize))) {
+      this.reject(new Error('Error parsing data size'))
+    }
+
+    this.state.dataSizeReceived += 1
+    this.state.dataSize += Number(data.dataSize)
+
+    if (this.state.dataSizeReceived === this.clients.length) {
+      console.log(`Datasize Accepted: Total: ${this.state.dataSize}`)
+      this.state.step = step.DATA_SIZE_ACCEPTED
+      this.state.dataSizeReceived = 0
+      this.sendToAll(pack({ message: 'compile', mpc: { id: this.job.id, name: 'sedp', dataSize: this.state.dataSize } }), this.players)
     }
   }
 
@@ -198,8 +224,8 @@ class Computation {
     if (this.state.listen === this.players.length) {
       console.log('Players are listening...')
       this.state.step = step.IMPORT_START
-      this.setupClients()
       this.state.listen = 0
+      this.sendToAll(pack({ message: 'import' }), this.clients)
     }
   }
 
