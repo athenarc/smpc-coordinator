@@ -51,12 +51,28 @@ class Computation {
   }
 
   _register () {
-    this.emitter.on('data-size-received', this.handleDataSize.bind(this))
-    this.emitter.on('compilation-ended', this.handleCompilation.bind(this))
-    this.emitter.on('listen', this.listen.bind(this))
-    this.emitter.on('exit', this.handleExit.bind(this))
-    this.emitter.on('computation-finished', this.handleComputationFinished.bind(this))
-    this.emitter.on('importation-finished', this.handleImportationFinished.bind(this))
+    this.emitter.on('data-size-received', (msg) => this._eventMiddleware('data-size-received', msg, this.handleDataSize.bind(this)))
+    this.emitter.on('compilation-ended', (msg) => this._eventMiddleware('compilation-ended', msg, this.handleCompilation.bind(this)))
+    this.emitter.on('listen', (msg) => this._eventMiddleware('listen', msg, this.listen.bind(this)))
+    this.emitter.on('exit', (msg) => this._eventMiddleware('exit', msg, this.handleExit.bind(this)))
+    this.emitter.on('computation-finished', (msg) => this._eventMiddleware('computation-finished', msg, this.handleComputationFinished.bind(this)))
+    this.emitter.on('importation-finished', (msg) => this._eventMiddleware('importation-finished', msg, this.handleImportationFinished.bind(this)))
+  }
+
+  _eventMiddleware (event, msg, next) {
+    if (msg.data) {
+      if (msg.data.errors && msg.data.errors.length > 0) {
+        this.handleError(msg)
+        return
+      }
+
+      if (msg.code && msg.code !== 0) {
+        this.handleError(msg)
+        return
+      }
+    }
+
+    next(msg)
   }
 
   setupPlayers () {
@@ -74,8 +90,13 @@ class Computation {
         this.players[ws._index].socket = null
 
         if (this.state.step !== step.COMPUTATION_END) {
+          // this.restart()
           this.reject(new Error(`Unexpected close with code: ${code} and reason: ${reason}`))
         }
+      })
+
+      ws.on('error', (err) => {
+        this.handleError(err)
       })
 
       ws.on('message', (data) => {
@@ -100,6 +121,7 @@ class Computation {
         console.log('Disconnected from client.')
         this.clients[ws._index].socket = null
         if (this.state.step !== step.IMPORT_END) {
+          // this.restart()
           this.reject(new Error(`Unexpected close with code: ${code} and reason: ${reason}`))
         }
       })
@@ -107,6 +129,10 @@ class Computation {
       ws.on('message', (data) => {
         data = unpack(data)
         this.handleMessage('client', ws, data)
+      })
+
+      ws.on('error', (err) => {
+        this.handleError(err)
       })
     }
   }
@@ -134,15 +160,11 @@ class Computation {
   }
 
   handleError ({ data }) {
+    this.restart()
     this.reject(new Error('An error has occured!'))
   }
 
   handleExit ({ entity, data }) {
-    if (data.code !== 0 || data.errors.length > 0) {
-      this.reject(data.errors)
-      return
-    }
-
     switch (entity) {
       case 'player':
         this.state.exit += 1
@@ -153,18 +175,14 @@ class Computation {
       case 'client':
         this.state.import += 1
         if (this.state.import === this.clients.length) {
-          this.emitter.emit('importation-finished', {})
+          this.emitter.emit('importation-finished', { data })
         }
         break
       default:
     }
   }
-  handleDataSize ({ data }) {
-    if (data.errors && data.errors.length > 0) {
-      this.reject(data.errors)
-      return
-    }
 
+  handleDataSize ({ data }) {
     if (isNaN(Number(data.dataSize))) {
       this.reject(new Error('Error parsing data size'))
     }
@@ -181,11 +199,6 @@ class Computation {
   }
 
   handleCompilation ({ data }) {
-    if (data.code !== 0 || data.errors.length > 0) {
-      this.reject(data.errors)
-      return
-    }
-
     this.state.compiled += 1
     if (this.state.compiled === this.players.length) {
       console.log('Compilation finished.')
