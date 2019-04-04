@@ -213,6 +213,12 @@ class Computation {
     return new Promise((resolve, reject) => this._execute(resolve, reject))
   }
 
+  restart () {
+    const msg = pack({ message: 'restart' })
+    this.sendToAll(msg, this.players)
+    this.sendToAll(msg, this.clients)
+  }
+
   sendToAll (message, entities) {
     for (const e of entities) {
       if (e.socket && e.socket.readyState === WebSocket.OPEN) {
