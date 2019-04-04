@@ -19,7 +19,8 @@ const step = {
   IMPORT_END: 4,
   COMPUTATION_START: 5,
   COMPUTATION_END: 6,
-  COMPLETED: 6,
+  COMPLETED: 7,
+  DATA_SIZE_ACCEPTED: 8,
   properties: {
     0: { 'msg': 'Init SMPC Computation' },
     1: { 'msg': 'Compiling MPC code' },
@@ -28,7 +29,8 @@ const step = {
     4: { 'msg': 'Data Importation Finished' },
     5: { 'msg': 'Computation started' },
     6: { 'msg': 'Computation completed' },
-    7: { 'msg': 'Completed.' }
+    7: { 'msg': 'Completed.' },
+    8: { 'msg': 'Total data size accepted.' }
   }
 }
 
