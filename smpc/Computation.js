@@ -28,6 +28,7 @@ class Computation {
     ]
 
     this.state = {
+      compiled: 0,
       listen: 0,
       import: 0,
       exit: 0,
@@ -47,6 +48,7 @@ class Computation {
   }
 
   _register () {
+    this.emitter.on('compilation-ended', this.handleCompilation.bind(this))
     this.emitter.on('listen', this.listen.bind(this))
     this.emitter.on('exit', this.handleExit.bind(this))
     this.emitter.on('computation-finished', this.handleComputationFinished.bind(this))
@@ -61,7 +63,7 @@ class Computation {
 
       ws.on('open', () => {
         console.log('Connected to player.')
-        ws.send(pack({ message: 'start' }))
+        ws.send(pack({ message: 'compile', mpc: { id: this.job.id, name: 'sedp', dataSize: 13 } }))
       })
 
       ws.on('close', (code, reason) => {
@@ -108,6 +110,9 @@ class Computation {
 
   handleMessage (entity, ws, data) {
     switch (data.message) {
+      case 'compilation-ended':
+        this.emitter.emit('compilation-ended', { entity, ws, data })
+        break
       case 'listen':
         this.emitter.emit('listen', { entity, ws, data })
         break
@@ -149,6 +154,21 @@ class Computation {
     }
   }
 
+  handleCompilation ({ data }) {
+    if (data.code !== 0 || data.errors.length > 0) {
+      this.reject(data.errors)
+      return
+    }
+
+    this.state.compiled += 1
+    if (this.state.compiled === this.players.length) {
+      console.log('Compilation finished.')
+      this.state.step = step.COMPILE_END
+      this.state.compiled = 0
+      this.sendToAll(pack({ message: 'start' }), this.players)
+    }
+  }
+
   handleComputationFinished ({ data }) {
     console.log('Computation Finished')
     this.state.step = step.COMPUTATION_END
@@ -169,7 +189,7 @@ class Computation {
 
   sendToAll (message, entities) {
     for (const e of entities) {
-      e.socket.send(message) // message must be packed to avoid expessive call to JSON API
+      e.socket.send(message) // Assume message is already packed. Message must be packed beforehand to avoid expessive call to JSON API
     }
   }
 
