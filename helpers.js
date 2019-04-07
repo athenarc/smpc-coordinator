@@ -19,15 +19,18 @@ const createSimpleSMPCRouter = (router, path) => {
       return
     }
 
+    const job = { attributes: req.body.attributes, filters: req.body.filters }
+
     try {
       const id = uuidv4()
+      job.id = id
+      job.status = status.PENDING
       const location = `/api/smpc/queue/${id}`
 
       res.set('Location', location)
       res.status(202).json({ location, id, status: status.properties[status.PENDING].msg })
-
       await db.put(id, { 'status': status.PENDING })
-      addToQueue({ id })
+      addToQueue({ ...job })
     } catch (err) {
       next(err)
     }
