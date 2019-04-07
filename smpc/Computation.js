@@ -77,16 +77,16 @@ class Computation {
 
   setupPlayers () {
     for (const [index, p] of this.players.entries()) {
-      this.players[index].socket = new WebSocket(p.address)
+      this.players[index].socket = new WebSocket(p.address) // connection errors are handle on ws.on('error')
       this.players[index].socket._index = index
       const ws = this.players[index].socket
 
       ws.on('open', () => {
-        console.log('Connected to player.')
+        console.log(`Connected to player ${index}.`)
       })
 
       ws.on('close', (code, reason) => {
-        console.log('Disconnected from player.')
+        console.log(`Disconnected from player ${index}.`)
         this.players[ws._index].socket = null
 
         if (this.state.step !== step.COMPUTATION_END) {
@@ -113,12 +113,12 @@ class Computation {
       const ws = this.clients[index].socket
 
       ws.on('open', () => {
-        console.log('Connected to client.')
+        console.log(`Connected to client ${index}.`)
         ws.send(pack({ message: 'data-size' }))
       })
 
       ws.on('close', (code, reason) => {
-        console.log('Disconnected from client.')
+        console.log(`Disconnected from client ${index}.`)
         this.clients[ws._index].socket = null
         if (this.state.step !== step.IMPORT_END) {
           // this.restart()
