@@ -213,13 +213,13 @@ class Computation {
     this.state.step = step.COMPUTATION_END
     this.state.exit = 0
     this.cleanUpPlayers()
+    this.cleanUpClients()
     this.resolve(data.message)
   }
 
   handleImportationFinished () {
     console.log('Importation Finished')
     this.state.step = step.IMPORT_END
-    this.cleanUpClients()
   }
 
   execute () {
