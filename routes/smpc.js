@@ -34,7 +34,7 @@ const createSimpleSMPCRouter = (router, path) => {
 
       const location = `/api/smpc/queue/${id}`
       res.set('Location', location)
-      res.status(202).json({ location, id, status: status.properties[status.PENDING].msg })
+      res.status(202).json({ location, id, status: status.properties[status.PENDING].msg, algorithm: Object.keys(algorithm)[0] })
 
       const { status: _status, id: _id, ...rest } = job
       await db.put(id, { ...job })
