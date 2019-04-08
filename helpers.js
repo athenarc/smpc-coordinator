@@ -50,7 +50,7 @@ const unpack = (msg) => {
 }
 
 const isAttribute = (attr) => {
-  return attr.every(r => totalAttributes.includes(r.name))
+  return attr.every(r => totalAttributes.some((a) => a.name === r.name))
 }
 
 const validateRequest = (req) => {
