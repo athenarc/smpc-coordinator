@@ -1,6 +1,7 @@
 const uuidv4 = require('uuid/v4')
 const winston = require('winston')
 const _ = require('lodash')
+const crypto = require('crypto')
 
 const { HTTPError } = require('./errors')
 const { status } = require('./config/constants')
@@ -86,8 +87,16 @@ const getHistogramType = (attr) => {
   return algorithm
 }
 
+const sha256 = (data) => {
+  const hash = crypto.createHash('sha256')
+  hash.update(data)
+  return hash.digest('hex')
+}
+
 module.exports = {
-  createSimpleSMPCRouter,
+  validateRequest,
+  getHistogramType,
   pack,
-  unpack
+  unpack,
+  sha256
 }
