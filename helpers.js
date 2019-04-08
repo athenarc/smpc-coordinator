@@ -13,6 +13,12 @@ const unpack = (msg) => {
 }
 
 const isAttribute = (attr) => {
+  for (const a of attr) {
+    if (_.isEmpty(a)) {
+      return false
+    }
+  }
+
   return attr.every(r => totalAttributes.some((a) => a.name === r.name))
 }
 
