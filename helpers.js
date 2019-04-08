@@ -38,6 +38,8 @@ const createSimpleSMPCRouter = (router, path) => {
 
   return router
 }
+const totalAttributes = require('./smpc-global/attributes.json')
+const algorithms = require('./smpc-global/algorithms.json')
 
 const pack = (msg) => {
   return JSON.stringify(msg)
@@ -69,6 +71,19 @@ const validateRequest = (req) => {
   }
 
   return { success: true }
+}
+
+const getHistogramType = (attr) => {
+  let types = attr.map(a => totalAttributes.find((b) => b.name === a.name)).map(item => item.type).sort()
+
+  let candidates = algorithms[0]['histograms'].filter((item) => Object.values(item)[0].attributes.length === types.length)
+
+  let algorithm = candidates.find((item) => {
+    let attr = item[Object.keys(item)[0]].attributes.sort()
+    return _.difference(attr, types).length === 0
+  })
+
+  return algorithm
 }
 
 module.exports = {
