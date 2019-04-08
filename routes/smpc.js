@@ -12,9 +12,15 @@ let router = express.Router()
 const createSimpleSMPCRouter = (router, path) => {
   router.post(path, async (req, res, next) => {
     const results = validateRequest(req.body)
+
+    if (!results.success) {
+      next(new HTTPError(400, results.msg))
+      return
+    }
+
     const algorithm = getHistogramType(req.body.attributes)
 
-    if (!results.success || algorithm === undefined) {
+    if (algorithm === undefined) {
       next(new HTTPError(400, results.msg))
       return
     }
