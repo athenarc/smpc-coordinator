@@ -6,9 +6,9 @@ const { status } = require('./config/constants')
 
 const queue = new Queue('smpc', { delayedDebounce: 3000 })
 
-const addToQueue = ({ id }) => {
-  const job = queue.createJob({ id })
-  job.setId(id)
+const addJob = (jobDescription) => {
+  const job = queue.createJob({ ...jobDescription })
+  job.setId(jobDescription.id)
   job.backoff('fixed', 1000)
 
   // Consider changing to promise
@@ -63,5 +63,5 @@ queue.on('stalled', async (jobId) => {
 
 module.exports = {
   queue,
-  addToQueue
+  addJob
 }
