@@ -18,7 +18,8 @@ const createSimpleSMPCRouter = (router, path) => {
       return
     }
 
-    const algorithm = getHistogramType(req.body.attributes)
+    let algorithm = getHistogramType(req.body.attributes)
+    algorithm = Object.keys(algorithm)[0]
 
     if (algorithm === undefined) {
       next(new HTTPError(400, results.msg))
@@ -34,7 +35,7 @@ const createSimpleSMPCRouter = (router, path) => {
 
       const location = `/api/smpc/queue/${id}`
       res.set('Location', location)
-      res.status(202).json({ location, id, status: status.properties[status.PENDING].msg, algorithm: Object.keys(algorithm)[0] })
+      res.status(202).json({ location, id, status: status.properties[status.PENDING].msg, algorithm })
 
       const { status: _status, id: _id, ...rest } = job
       await db.put(id, { ...job })
