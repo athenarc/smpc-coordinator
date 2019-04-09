@@ -31,7 +31,7 @@ queue.on('ready', () => {
     console.log(`Processing job ${job.id}`)
     try {
       await db.put(job.id, { 'status': status.PROCESSING })
-      const results = await compute(job)
+      const results = await compute({ ...job.data })
       return results
     } catch (e) {
       console.error(e)
