@@ -79,9 +79,8 @@ router.get('/results/:id', async (req, res, next) => {
     let value = await db.get(req.params.id)
 
     return res.status(200).json({
-      id: req.params.id,
-      status: status.properties[value.status].msg,
-      results: value.results
+      ...value,
+      status: status.properties[value.status].msg
     })
   } catch (err) {
     if (err.notFound) {
