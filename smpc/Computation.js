@@ -28,13 +28,19 @@ class Computation {
     ]
 
     this.state = {
-      dataSizeReceived: 0,
+      dataInfoReceived: 0,
       compiled: 0,
       listen: 0,
       import: 0,
       exit: 0,
       step: step.INIT,
-      dataSize: 0
+      dataInfo: {
+        precision: 0.00001,
+        sizeAlloc: 0,
+        cellsX: null,
+        cellsY: null,
+        dataSize: 0
+      },
     }
 
     this.resolve = null
@@ -51,7 +57,7 @@ class Computation {
   }
 
   _register () {
-    this.emitter.on('data-size-received', (msg) => this._eventMiddleware('data-size-received', msg, this.handleDataSize.bind(this)))
+    this.emitter.on('data-info-received', (msg) => this._eventMiddleware('data-info-received', msg, this.handleDataInfo.bind(this)))
     this.emitter.on('compilation-ended', (msg) => this._eventMiddleware('compilation-ended', msg, this.handleCompilation.bind(this)))
     this.emitter.on('listen', (msg) => this._eventMiddleware('listen', msg, this.listen.bind(this)))
     this.emitter.on('exit', (msg) => this._eventMiddleware('exit', msg, this.handleExit.bind(this)))
@@ -114,7 +120,7 @@ class Computation {
 
       ws.on('open', () => {
         console.log(`Connected to client ${index}.`)
-        ws.send(pack({ message: 'data-size' }))
+        ws.send(pack({ message: 'data-info', job: this.job }))
       })
 
       ws.on('close', (code, reason) => {
@@ -139,8 +145,8 @@ class Computation {
 
   handleMessage (entity, ws, data) {
     switch (data.message) {
-      case 'data-size':
-        this.emitter.emit('data-size-received', { entity, ws, data })
+      case 'data-info':
+        this.emitter.emit('data-info-received', { entity, ws, data })
         break
       case 'compilation-ended':
         this.emitter.emit('compilation-ended', { entity, ws, data })
@@ -182,20 +188,24 @@ class Computation {
     }
   }
 
-  handleDataSize ({ data }) {
-    if (isNaN(Number(data.dataSize))) {
-      this.reject(new Error('Error parsing data size'))
-    }
+  handleDataInfo ({ data }) {
+    this.state.dataInfoReceived += 1
+    this.processDataInfo(data.datasetInfo)
 
-    this.state.dataSizeReceived += 1
-    this.state.dataSize += Number(data.dataSize)
-
-    if (this.state.dataSizeReceived === this.clients.length) {
-      console.log(`Datasize Accepted: Total: ${this.state.dataSize}`)
+    if (this.state.dataInfoReceived === this.clients.length) {
+      console.log(`Datasize Accepted: Total: ${this.state.dataInfo.dataSize}`)
       this.state.step = step.DATA_SIZE_ACCEPTED
-      this.state.dataSizeReceived = 0
-      this.sendToAll(pack({ message: 'compile', mpc: { id: this.job.id, name: 'sedp', dataSize: this.state.dataSize } }), this.players)
+      this.state.dataInfoReceived = 0
+      this.sendToAll(pack({ message: 'compile', job: this.job, dataInfo: this.state.dataInfo }), this.players)
     }
+  }
+
+  processDataInfo (info) {
+    this.state.dataInfo.sizeAlloc += Number(info.sizeAlloc)
+    this.state.dataInfo.dataSize += Number(info.dataSize)
+    this.state.dataInfo.precision = Math.min(Number(info.precision))
+    this.state.dataInfo.cellsX = Number(info.cellsX) // Number(null) === 0
+    this.state.dataInfo.cellsY = Number(info.cellsY)
   }
 
   handleCompilation ({ data }) {
