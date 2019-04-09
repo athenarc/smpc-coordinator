@@ -34,13 +34,6 @@ class Computation {
       import: 0,
       exit: 0,
       step: step.INIT,
-      dataInfo: {
-        precision: 0.00001,
-        sizeAlloc: 0,
-        cellsX: null,
-        cellsY: null,
-        dataSize: 0
-      },
       results: ''
     }
 
@@ -200,19 +193,10 @@ class Computation {
     this.processDataInfo(data.datasetInfo)
 
     if (this.state.dataInfoReceived === this.clients.length) {
-      console.log(`Datasize Accepted: Total: ${this.state.dataInfo.dataSize}`)
       this.state.step = step.DATA_SIZE_ACCEPTED
       this.state.dataInfoReceived = 0
       this.sendToAll(pack({ message: 'compile', job: this.job, dataInfo: this.state.dataInfo }), this.players)
     }
-  }
-
-  processDataInfo (info) {
-    this.state.dataInfo.sizeAlloc += Number(info.sizeAlloc)
-    this.state.dataInfo.dataSize += Number(info.dataSize)
-    this.state.dataInfo.precision = Math.min(Number(info.precision))
-    this.state.dataInfo.cellsX = Number(info.cellsX) // Number(null) === 0
-    this.state.dataInfo.cellsY = Number(info.cellsY)
   }
 
   handleCompilation ({ data }) {
@@ -248,6 +232,8 @@ class Computation {
 
       results.push(r)
     }
+
+    this.state.results = [...results]
   }
 
   handleImportationFinished () {
