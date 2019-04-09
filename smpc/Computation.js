@@ -88,6 +88,7 @@ class Computation {
       const ws = this.players[index].socket
 
       ws.on('open', () => {
+        ws.send(pack({ message: 'job-info', job: this.job }))
         console.log(`Connected to player ${index}.`)
       })
 
@@ -120,6 +121,7 @@ class Computation {
 
       ws.on('open', () => {
         console.log(`Connected to client ${index}.`)
+        ws.send(pack({ message: 'job-info', job: this.job }))
         ws.send(pack({ message: 'data-info', job: this.job }))
       })
 
@@ -214,7 +216,7 @@ class Computation {
       console.log('Compilation finished.')
       this.state.step = step.COMPILE_END
       this.state.compiled = 0
-      this.sendToAll(pack({ message: 'start' }), this.players)
+      this.sendToAll(pack({ message: 'start', job: this.job }), this.players)
     }
   }
 
@@ -237,7 +239,7 @@ class Computation {
   }
 
   restart () {
-    const msg = pack({ message: 'restart' })
+    const msg = pack({ message: 'restart', job: this.job })
     this.sendToAll(msg, this.players)
     this.sendToAll(msg, this.clients)
   }
@@ -256,7 +258,7 @@ class Computation {
       console.log('Players are listening...')
       this.state.step = step.IMPORT_START
       this.state.listen = 0
-      this.sendToAll(pack({ message: 'import' }), this.clients)
+      this.sendToAll(pack({ message: 'import', job: this.job }), this.clients)
     }
   }
 
