@@ -216,6 +216,7 @@ class Computation {
     this.cleanUpPlayers()
     this.cleanUpClients()
     this.processResults()
+    this.state.results = this.postProcess([ ...this.state.results ])
     this.resolve(this.state.results)
   }
 
