@@ -41,6 +41,7 @@ class Computation {
         cellsY: null,
         dataSize: 0
       },
+      results: ''
     }
 
     this.resolve = null
@@ -176,6 +177,10 @@ class Computation {
     switch (entity) {
       case 'player':
         this.state.exit += 1
+        if (data.id === '0') {
+          this.state.results = data.output
+        }
+
         if (this.state.exit === this.players.length) {
           this.emitter.emit('computation-finished', { data })
         }
@@ -226,7 +231,23 @@ class Computation {
     this.state.exit = 0
     this.cleanUpPlayers()
     this.cleanUpClients()
-    this.resolve(data.message)
+    this.processResults()
+    this.resolve(this.state.results)
+  }
+
+  processResults () {
+    let results = []
+    for (let r of this.state.results.split('\n')) {
+      if (r.includes('START')) {
+        continue
+      }
+
+      if (r.includes('END')) {
+        break
+      }
+
+      results.push(r)
+    }
   }
 
   handleImportationFinished () {
