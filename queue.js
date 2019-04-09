@@ -23,14 +23,14 @@ const addJob = (jobDescription) => {
 
 const onSucceeded = async (job, results) => {
   console.log(`Done: ${job.id}: Results: ${results}`)
-  await db.put(job.id, { 'status': status.COMPLETED, results })
+  await db.put(job.id, { ...job.data, 'status': status.COMPLETED, results })
 }
 
 queue.on('ready', () => {
   queue.process(async (job) => {
     console.log(`Processing job ${job.id}`)
     try {
-      await db.put(job.id, { 'status': status.PROCESSING })
+      await db.put(job.id, { ...job.data, 'status': status.PROCESSING })
       const results = await compute({ ...job.data })
       return results
     } catch (e) {
@@ -48,17 +48,16 @@ queue.on('error', (err) => {
 
 queue.on('retrying', async (job, err) => {
   console.log(`Job ${job.id} failed with error ${err.message} but is being retried!`)
-  await db.put(job.id, { 'status': status.PENDING })
+  await db.put(job.id, { ...job.data, 'status': status.PENDING })
 })
 
 queue.on('failed', async (job, err) => {
   console.log(`Job ${job.id} failed with error ${err.message}`)
-  await db.put(job.id, { 'status': status.FAILED })
+  await db.put(job.id, { ...job.data, 'status': status.FAILED })
 })
 
 queue.on('stalled', async (jobId) => {
   console.log(`Job ${jobId} stalled and will be reprocessed`)
-  await db.put(jobId, { 'status': status.PENDING })
 })
 
 module.exports = {
