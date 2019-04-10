@@ -223,11 +223,11 @@ class Computation {
   processResults () {
     let results = []
     for (let r of this.state.results.split('\n')) {
-      if (r.includes('START')) {
+      if (r.includes('#') || r.includes('START')) {
         continue
       }
 
-      if (r.includes('END')) {
+      if (r.includes('$') || r.includes('END')) {
         break
       }
 
