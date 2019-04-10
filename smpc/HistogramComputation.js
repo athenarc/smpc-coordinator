@@ -53,8 +53,9 @@ class HistogramComputation extends Computation {
   }
 
   getCell (attr) {
-    const cells = attr.cells || Math.floor(this.state.dataInfo.dataSize / 10)
-    return Math.min(cells, Math.floor(this.state.dataInfo.dataSize / 10))
+    const defaultCells = Math.floor(this.state.dataInfo.dataSize / 10)
+    const cells = attr.cells || defaultCells
+    return Math.min(cells, defaultCells)
   }
 
   postProcess (data) {
@@ -72,12 +73,16 @@ class HistogramComputation extends Computation {
     }
 
     if (this.job.algorithm === '2d_mixed_histogram') {
+
     }
 
     if (this.job.algorithm === '2d_categorical_histogram') {
     }
 
     if (this.job.algorithm === '1d_numerical_histogram') {
+      const m = data[0].replace(/\s/g, '').split(',')
+      data = data.slice(1)
+      results = { mix: m[0], max: m[1], y: data.map(item => item.replace(/\s/g, '').split(',')[1]), cells: this.getCell(this.job.attributes[0]) }
     }
 
     if (this.job.algorithm === '2d_numerical_histogram') {
