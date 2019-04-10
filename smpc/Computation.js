@@ -91,7 +91,7 @@ class Computation {
         this.players[ws._index].socket = null
 
         if (this.state.step !== step.COMPUTATION_END) {
-          // this.restart()
+          this.restart()
           this.reject(new Error(`Unexpected close with code: ${code} and reason: ${reason}`))
         }
       })
@@ -123,7 +123,7 @@ class Computation {
         console.log(`Disconnected from client ${index}.`)
         this.clients[ws._index].socket = null
         if (this.state.step !== step.IMPORT_END) {
-          // this.restart()
+          this.restart()
           this.reject(new Error(`Unexpected close with code: ${code} and reason: ${reason}`))
         }
       })
