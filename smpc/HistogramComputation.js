@@ -25,16 +25,16 @@ class HistogramComputation extends Computation {
     this.state.dataInfo.intToAttribute = info.intToAttribute
 
     if (this.job.algorithm === '1d_categorical_histogram') {
-      this.state.dataInfo.cellsX = Number(info.cellsX) // Number(null) === 0
+      this.state.dataInfo.cellsX = Number(info.cellsX)
     }
 
     if (this.job.algorithm === '2d_mixed_histogram') {
-      this.state.dataInfo.cellsX = Number(info.cellsX) // Number(null) === 0
+      this.state.dataInfo.cellsX = Number(info.cellsX)
       this.state.dataInfo.cellsY = this.getNumericCell()
     }
 
     if (this.job.algorithm === '2d_categorical_histogram') {
-      this.state.dataInfo.cellsX = Number(info.cellsX) // Number(null) === 0
+      this.state.dataInfo.cellsX = Number(info.cellsX)
       this.state.dataInfo.cellsY = Number(info.cellsY)
     }
 
@@ -110,14 +110,12 @@ class HistogramComputation extends Computation {
     let results = data
 
     if (this.job.algorithm === '1d_categorical_histogram') {
-      const attr = mapping[this.job.attributes[0].name]
       results = data.reduce((previous, current) => {
         const xy = current.replace(/\s/g, '').split(',')
-        previous.x.push(Object.keys(attr).find(key => attr[key] === Number(xy[0])))
         previous.y.push(Number(xy[1]))
 
         return previous
-      }, { x: [], y: [] })
+      }, { x: this.getAttributeNames(this.job.attributes[0].name), y: [] })
     }
 
     if (this.job.algorithm === '2d_mixed_histogram') {
@@ -131,12 +129,13 @@ class HistogramComputation extends Computation {
     }
 
     if (this.job.algorithm === '2d_categorical_histogram') {
+
     }
 
     if (this.job.algorithm === '1d_numerical_histogram') {
-      const m = data[0].replace(/\s/g, '').split(',')
+      const m = this.getMinMax(data[0])
       data = data.slice(1)
-      results = { mix: m[0], max: m[1], y: data.map(item => item.replace(/\s/g, '').split(',')[1]), cells: this.getCell(this.job.attributes[0]) }
+      results = { ...m, y: data.map(item => item.replace(/\s/g, '').split(',')[1]), cells: this.getCell(this.job.attributes[0]) }
     }
 
     if (this.job.algorithm === '2d_numerical_histogram') {
