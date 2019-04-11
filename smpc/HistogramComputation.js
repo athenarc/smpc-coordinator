@@ -140,6 +140,16 @@ class HistogramComputation extends Computation {
     }
 
     if (this.job.algorithm === '2d_numerical_histogram') {
+      const m0 = this.getMinMax(data[0])
+      const m1 = this.getMinMax(data[1])
+      let width0 = (m0.max - m0.min) / 2
+      let width1 = (m1.max - m1.min) / 2
+      let cellsX = this.getCell(this.job.attributes[0])
+      let cellsY = this.getCell(this.job.attributes[1])
+
+      data = data.slice(2)
+      data = this.constructHeatMap(data, cellsX, cellsY)
+      results = { min: [m0.min, m1.min], max: [m0.max, m1.max], z: data, x: this.computeAxisLabels(m0.min, m0.max, width0, cellsX), y: this.computeAxisLabels(m1.min, m1.max, width1, cellsY) }
     }
 
     return results
