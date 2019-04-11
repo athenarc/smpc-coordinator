@@ -70,7 +70,7 @@ class HistogramComputation extends Computation {
     return { min: Number(m[0]), max: Number(m[1]) }
   }
 
-  constructHeatMap (data, cellsX, cellsY) {
+  construct2DArray (data, cellsX, cellsY) {
     let arr = []
 
     for (let i = 0; i < cellsX; i++) {
@@ -121,15 +121,15 @@ class HistogramComputation extends Computation {
     if (this.job.algorithm === '2d_mixed_histogram') {
       const m = this.getMinMax(data[0])
       data = data.slice(1)
-      data = this.constructHeatMap(data, this.state.dataInfo.cellsX, this.getNumericCell())
+      data = this.construct2DArray(data, this.state.dataInfo.cellsX, this.getNumericCell())
       let cells = Number(this.getNumericCell())
-      let width = (m.max - m.min) / 2
 
-      results = { ...m, z: [...data], x: this.getAttributeNames(this.getCatecoricalAttribute().name), y: this.computeAxisLabels(m.min, m.max, width, cells) }
+      results = { ...m, z: [...data], y: this.getAttributeNames(this.getCatecoricalAttribute().name), cells }
     }
 
     if (this.job.algorithm === '2d_categorical_histogram') {
-
+      data = this.construct2DArray(data, this.state.dataInfo.cellsX, this.state.dataInfo.cellsY)
+      results = { z: [...data], labels: { y: this.getAttributeNames(this.job.attributes[0].name), x: this.getAttributeNames(this.job.attributes[1].name) } }
     }
 
     if (this.job.algorithm === '1d_numerical_histogram') {
@@ -141,14 +141,12 @@ class HistogramComputation extends Computation {
     if (this.job.algorithm === '2d_numerical_histogram') {
       const m0 = this.getMinMax(data[0])
       const m1 = this.getMinMax(data[1])
-      let width0 = (m0.max - m0.min) / 2
-      let width1 = (m1.max - m1.min) / 2
       let cellsX = this.getCell(this.job.attributes[0])
       let cellsY = this.getCell(this.job.attributes[1])
 
       data = data.slice(2)
-      data = this.constructHeatMap(data, cellsX, cellsY)
-      results = { min: [m0.min, m1.min], max: [m0.max, m1.max], z: data, x: this.computeAxisLabels(m0.min, m0.max, width0, cellsX), y: this.computeAxisLabels(m1.min, m1.max, width1, cellsY) }
+      data = this.construct2DArray(data, cellsX, cellsY)
+      results = { min: [m0.min, m1.min], max: [m0.max, m1.max], z: data, cellsX, cellsY }
     }
 
     return results
