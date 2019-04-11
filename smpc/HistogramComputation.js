@@ -48,14 +48,62 @@ class HistogramComputation extends Computation {
     }
   }
 
+  getNumericalAttribute () {
+    return this.job.attributes.find(a => attributes.find(b => b.name === a.name && b.type === 'numerical'))
+  }
+  getCatecoricalAttribute () {
+    return this.job.attributes.find(a => attributes.find(b => b.name === a.name && b.type === 'categorical'))
+  }
+
   getNumericCell () {
-    return this.getCell(this.job.attributes.find(a => attributes.find(b => b.name === a.name && b.type === 'numerical')))
+    return this.getCell(this.getNumericalAttribute())
   }
 
   getCell (attr) {
     const defaultCells = Math.floor(this.state.dataInfo.dataSize / 10)
     const cells = attr.cells || defaultCells
     return Math.min(cells, defaultCells)
+  }
+
+  getMinMax (data) {
+    const m = data.replace(/\s/g, '').split(',')
+    return { min: Number(m[0]), max: Number(m[1]) }
+  }
+
+  constructHeatMap (data, cellsX, cellsY) {
+    let arr = []
+
+    for (let i = 0; i < cellsX; i++) {
+      arr.push([])
+      for (let j = 0; j < cellsY; j++) {
+        arr[i].push(0)
+      }
+    }
+
+    for (let i = 0; i < data.length; i++) {
+      let b = data[i].replace(/\s/g, '').split(',')
+      arr[Number(b[0])][Number(b[1])] = b[2]
+    }
+
+    return arr
+  }
+
+  getAttributeNames (name) {
+    return Object.keys(mapping[name])
+  }
+
+  computeAxisLabels (min, max, width, cells) {
+    let start = min
+    let end = max
+    const ticks = []
+    for (const _ of Array(cells - 1).keys()) { // eslint-disable-line no-unused-vars
+      end = start + width
+      ticks.push(`[${start}, ${end})`)
+      start = end
+    }
+    end = start + width
+    ticks.push(`[${start}, ${end}]`)
+    return ticks
   }
 
   postProcess (data) {
@@ -73,7 +121,13 @@ class HistogramComputation extends Computation {
     }
 
     if (this.job.algorithm === '2d_mixed_histogram') {
+      const m = this.getMinMax(data[0])
+      data = data.slice(1)
+      data = this.constructHeatMap(data, this.state.dataInfo.cellsX, this.getNumericCell())
+      let cells = Number(this.getNumericCell())
+      let width = (m.max - m.min) / 2
 
+      results = { ...m, z: [...data], x: this.getAttributeNames(this.getCatecoricalAttribute().name), y: this.computeAxisLabels(m.min, m.max, width, cells) }
     }
 
     if (this.job.algorithm === '2d_categorical_histogram') {
