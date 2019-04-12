@@ -14,6 +14,7 @@ const routes = require('./routes')
 const queue = require('./queue')
 const logger = require('./config/winston')
 const { ErrorHandler, HTTPErrorHandler } = require('./middlewares/error')
+const { setupWss } = require('./ws-server.js')
 
 const app = express()
 app.queue = queue
@@ -46,7 +47,9 @@ if (_.isEmpty(process.env.SMPC_ENGINE)) {
   app.use(HTTPErrorHandler)
   app.use(ErrorHandler)
 
-  app.listen(LISTEN_PORT, () => {
+  const server = app.listen(LISTEN_PORT, () => {
     logger.info('SMPC Coordinator running on port %d', LISTEN_PORT)
   })
+
+  setupWss(server, sessionMiddleware)
 })()
