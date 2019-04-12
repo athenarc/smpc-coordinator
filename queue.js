@@ -3,6 +3,7 @@ const { compute } = require('./smpc/smpc')
 const { HTTPError } = require('./errors')
 const { db } = require('./db')
 const { status } = require('./config/constants')
+const { appEmitter } = require('./emitters.js')
 
 const queue = new Queue('smpc', { delayedDebounce: 3000 })
 
@@ -23,14 +24,18 @@ const addJob = (jobDescription) => {
 
 const onSucceeded = async (job, results) => {
   console.log(`Done: ${job.id}: Results: ${results}`)
-  await db.put(job.id, { ...job.data, 'status': status.COMPLETED, results })
+  job.data = { ...job.data, 'status': status.COMPLETED, results }
+  await db.put(job.id, { ...job.data })
+  appEmitter.emit('update-computation', { ...job.data })
 }
 
 queue.on('ready', () => {
   queue.process(async (job) => {
     console.log(`Processing job ${job.id}`)
     try {
-      await db.put(job.id, { ...job.data, 'status': status.PROCESSING })
+      job.data.status = status.PROCESSING
+      appEmitter.emit('update-computation', { ...job.data })
+      await db.put(job.id, { ...job.data })
       const results = await compute({ ...job.data })
       return results
     } catch (e) {
@@ -48,12 +53,16 @@ queue.on('error', (err) => {
 
 queue.on('retrying', async (job, err) => {
   console.log(`Job ${job.id} failed with error ${err.message} but is being retried!`)
-  await db.put(job.id, { ...job.data, 'status': status.PENDING })
+  job.data.status = status.PENDING
+  appEmitter.emit('update-computation', { ...job.data })
+  await db.put(job.id, { ...job.data })
 })
 
 queue.on('failed', async (job, err) => {
   console.log(`Job ${job.id} failed with error ${err.message}`)
-  await db.put(job.id, { ...job.data, 'status': status.FAILED })
+  job.data.status = status.FAILED
+  appEmitter.emit('update-computation', { ...job.data })
+  await db.put(job.id, { ...job.data })
 })
 
 queue.on('stalled', async (jobId) => {
