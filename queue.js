@@ -1,13 +1,13 @@
 const Queue = require('bee-queue')
 const { compute } = require('./smpc/smpc')
 const { HTTPError } = require('./errors')
-const { db } = require('./db')
-const { status } = require('./config/constants')
+const { status, step } = require('./config/constants')
 const { appEmitter } = require('./emitters.js')
+const { updateJobStatus } = require('./helpers.js')
 
 const queue = new Queue('smpc', { delayedDebounce: 3000 })
 
-const addJob = (jobDescription) => {
+const addJobToQueue = (jobDescription) => {
   const job = queue.createJob({ ...jobDescription })
   job.setId(jobDescription.id)
   job.backoff('fixed', 1000)
@@ -20,12 +20,15 @@ const addJob = (jobDescription) => {
   })
 
   job.on('succeeded', (result) => onSucceeded(job, result))
+  job.on('progress', (progress) => {
+    console.log(`Job ${job.id} reported progress ${progress}`) // Next release will inlude the feature to pass arbitrary data in reportProgress
+    // console.log(`Job ${job.id} reported progress: page ${step.properties[progress.step].msg}`) // Next release will inlude the feature to pass arbitrary data in reportProgress
+  })
 }
 
 const onSucceeded = async (job, results) => {
-  console.log(`Done: ${job.id}: Results: ${results}`)
+  console.log(`Done: ${job.id}`)
   job.data = { ...job.data, 'status': status.COMPLETED, results }
-  await db.put(job.id, { ...job.data })
   appEmitter.emit('update-computation', { ...job.data })
 }
 
@@ -33,10 +36,8 @@ queue.on('ready', () => {
   queue.process(async (job) => {
     console.log(`Processing job ${job.id}`)
     try {
-      job.data.status = status.PROCESSING
-      appEmitter.emit('update-computation', { ...job.data })
-      await db.put(job.id, { ...job.data })
       const results = await compute({ ...job.data })
+      updateJobStatus(job, status.PROCESSING)
       return results
     } catch (e) {
       console.error(e)
@@ -53,16 +54,12 @@ queue.on('error', (err) => {
 
 queue.on('retrying', async (job, err) => {
   console.log(`Job ${job.id} failed with error ${err.message} but is being retried!`)
-  job.data.status = status.PENDING
-  appEmitter.emit('update-computation', { ...job.data })
-  await db.put(job.id, { ...job.data })
+  updateJobStatus(job, status.PENDING)
 })
 
 queue.on('failed', async (job, err) => {
   console.log(`Job ${job.id} failed with error ${err.message}`)
-  job.data.status = status.FAILED
-  appEmitter.emit('update-computation', { ...job.data })
-  await db.put(job.id, { ...job.data })
+  updateJobStatus(job, status.FAILED)
 })
 
 queue.on('stalled', async (jobId) => {
@@ -71,5 +68,5 @@ queue.on('stalled', async (jobId) => {
 
 module.exports = {
   queue,
-  addJob
+  addJobToQueue
 }

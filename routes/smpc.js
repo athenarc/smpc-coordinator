@@ -1,11 +1,11 @@
 const express = require('express')
 const uuidv4 = require('uuid/v4')
 
-const { db, cachedb } = require('../db')
+const { db, addJobToDB } = require('../db')
 const { status } = require('../config/constants')
 const { HTTPError } = require('../errors')
-const { validateRequest, getHistogramType, sha256 } = require('../helpers')
-const { addJob } = require('../queue')
+const { getHistogramType } = require('../helpers')
+const { addJobToQueue } = require('../queue')
 const validateHistogram = require('../validators/histogram')
 
 let router = express.Router()
@@ -26,11 +26,8 @@ const createSimpleSMPCRouter = (router, path, validators) => {
       res.set('Location', location)
       res.status(202).json({ location, id, status: status.properties[status.PENDING].msg, algorithm })
 
-      const { status: _status, id: _id, ...rest } = job
-      await db.put(id, { ...job })
-      await cachedb.put(sha256(JSON.stringify({ ...rest })), { ...rest, id: _id, status: _status })
-
-      addJob({ ...job })
+      addJobToDB({ ...job })
+      addJobToQueue({ ...job })
     } catch (err) {
       next(err)
     }
