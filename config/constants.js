@@ -13,24 +13,24 @@ const status = {
 
 const step = {
   INIT: 0,
-  COMPILE_START: 1,
-  COMPILE_END: 2,
-  IMPORT_START: 3,
-  IMPORT_END: 4,
-  COMPUTATION_START: 5,
-  COMPUTATION_END: 6,
-  COMPLETED: 7,
-  DATA_SIZE_ACCEPTED: 8,
+  DATA_SIZE_ACCEPTED: 1,
+  COMPILE_START: 2,
+  COMPILE_END: 3,
+  IMPORT_START: 4,
+  IMPORT_END: 5,
+  COMPUTATION_START: 6,
+  COMPUTATION_END: 7,
+  COMPLETED: 8,
   properties: {
     0: { 'msg': 'Init SMPC Computation' },
-    1: { 'msg': 'Compiling MPC code' },
-    2: { 'msg': 'MPC code compilation finished' },
-    3: { 'msg': 'Importing data' },
-    4: { 'msg': 'Data Importation Finished' },
-    5: { 'msg': 'Computation started' },
-    6: { 'msg': 'Computation completed' },
-    7: { 'msg': 'Completed.' },
-    8: { 'msg': 'Total data size accepted.' }
+    1: { 'msg': 'Total data size accepted.' },
+    2: { 'msg': 'Compiling MPC code' },
+    3: { 'msg': 'MPC code compilation finished' },
+    4: { 'msg': 'Importing data' },
+    5: { 'msg': 'Data Importation Finished' },
+    6: { 'msg': 'Computation started' },
+    7: { 'msg': 'Computation completed' },
+    8: { 'msg': 'Completed.' }
   }
 }
 
