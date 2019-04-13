@@ -28,7 +28,7 @@ const addJobToQueue = (jobDescription) => {
 
 const onSucceeded = async (job, results) => {
   console.log(`Done: ${job.id}`)
-  job.data = { ...job.data, 'status': status.COMPLETED, results }
+  job.data = { ...job.data, 'status': status.COMPLETED, results, timestamps: { ...job.data.timestamps, done: Date.now() } }
   appEmitter.emit('update-computation', { ...job.data })
 }
 
@@ -36,7 +36,9 @@ queue.on('ready', () => {
   queue.process(async (job) => {
     console.log(`Processing job ${job.id}`)
     try {
-      updateJobStatus(job, status.PROCESSING)
+      job.data.status = status.PROCESSING
+      job.data.timestamps = { ...job.data.timestamps, process: Date.now() }
+      appEmitter.emit('update-computation', { ...job.data })
       const results = await compute(job)
       return results
     } catch (e) {

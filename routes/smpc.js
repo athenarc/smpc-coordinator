@@ -15,7 +15,7 @@ const createSimpleSMPCRouter = (router, path, validators) => {
     let algorithm = getHistogramType(req.body.attributes) // TODO: Refactor. Should be moved elsewhere. The function is generic.
     algorithm = Object.keys(algorithm)[0]
 
-    const job = { attributes: req.body.attributes, filters: req.body.filters, algorithm }
+    const job = { attributes: req.body.attributes, filters: req.body.filters, algorithm, timestamps: { accepted: Date.now() } }
 
     try {
       const id = uuidv4()
@@ -24,7 +24,7 @@ const createSimpleSMPCRouter = (router, path, validators) => {
 
       const location = `/api/smpc/queue/${id}`
       res.set('Location', location)
-      res.status(202).json({ location, id, status: status.properties[status.PENDING].msg, algorithm })
+      res.status(202).json({ location, ...job, status: status.properties[status.PENDING].msg })
 
       addJobToDB({ ...job })
       addJobToQueue({ ...job })
