@@ -1,6 +1,7 @@
 const _ = require('lodash')
 const crypto = require('crypto')
 
+const { appEmitter } = require('./emitters.js')
 const totalAttributes = require('./smpc-global/attributes.json')
 const algorithms = require('./smpc-global/algorithms.json')
 
@@ -31,9 +32,15 @@ const sha256 = (data) => {
   return hash.digest('hex')
 }
 
+const updateJobStatus = (job, status) => {
+  job.data.status = status
+  appEmitter.emit('update-computation', { ...job.data })
+}
+
 module.exports = {
   getHistogramType,
   pack,
   unpack,
-  sha256
+  sha256,
+  updateJobStatus
 }
