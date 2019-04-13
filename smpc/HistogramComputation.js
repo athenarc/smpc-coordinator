@@ -24,35 +24,35 @@ class HistogramComputation extends Computation {
     this.state.dataInfo.attributeToInt = info.attributeToInt
     this.state.dataInfo.intToAttribute = info.intToAttribute
 
-    if (this.job.algorithm === '1d_categorical_histogram') {
+    if (this.job.data.algorithm === '1d_categorical_histogram') {
       this.state.dataInfo.cellsX = Number(info.cellsX)
     }
 
-    if (this.job.algorithm === '2d_mixed_histogram') {
+    if (this.job.data.algorithm === '2d_mixed_histogram') {
       this.state.dataInfo.cellsX = Number(info.cellsX)
       this.state.dataInfo.cellsY = this.getNumericCell()
     }
 
-    if (this.job.algorithm === '2d_categorical_histogram') {
+    if (this.job.data.algorithm === '2d_categorical_histogram') {
       this.state.dataInfo.cellsX = Number(info.cellsX)
       this.state.dataInfo.cellsY = Number(info.cellsY)
     }
 
-    if (this.job.algorithm === '1d_numerical_histogram') {
+    if (this.job.data.algorithm === '1d_numerical_histogram') {
       this.state.dataInfo.cellsX = this.getNumericCell()
     }
 
-    if (this.job.algorithm === '2d_numerical_histogram') {
-      this.state.dataInfo.cellsX = this.getCell(this.job.attributes[0])
-      this.state.dataInfo.cellsY = this.getCell(this.job.attributes[1])
+    if (this.job.data.algorithm === '2d_numerical_histogram') {
+      this.state.dataInfo.cellsX = this.getCell(this.job.data.attributes[0])
+      this.state.dataInfo.cellsY = this.getCell(this.job.data.attributes[1])
     }
   }
 
   getNumericalAttribute () {
-    return this.job.attributes.find(a => attributes.find(b => b.name === a.name && b.type === 'numerical'))
+    return this.job.data.attributes.find(a => attributes.find(b => b.name === a.name && b.type === 'numerical'))
   }
   getCatecoricalAttribute () {
-    return this.job.attributes.find(a => attributes.find(b => b.name === a.name && b.type === 'categorical'))
+    return this.job.data.attributes.find(a => attributes.find(b => b.name === a.name && b.type === 'categorical'))
   }
 
   getNumericCell () {
@@ -109,16 +109,16 @@ class HistogramComputation extends Computation {
   postProcess (data) {
     let results = data
 
-    if (this.job.algorithm === '1d_categorical_histogram') {
+    if (this.job.data.algorithm === '1d_categorical_histogram') {
       results = data.reduce((previous, current) => {
         const xy = current.replace(/\s/g, '').split(',')
         previous.y.push(Number(xy[1]))
 
         return previous
-      }, { x: this.getAttributeNames(this.job.attributes[0].name), y: [] })
+      }, { x: this.getAttributeNames(this.job.data.attributes[0].name), y: [] })
     }
 
-    if (this.job.algorithm === '2d_mixed_histogram') {
+    if (this.job.data.algorithm === '2d_mixed_histogram') {
       const m = this.getMinMax(data[0])
       data = data.slice(1)
       data = this.construct2DArray(data, this.state.dataInfo.cellsX, this.getNumericCell())
@@ -127,22 +127,22 @@ class HistogramComputation extends Computation {
       results = { ...m, z: [...data], y: this.getAttributeNames(this.getCatecoricalAttribute().name), cells }
     }
 
-    if (this.job.algorithm === '2d_categorical_histogram') {
+    if (this.job.data.algorithm === '2d_categorical_histogram') {
       data = this.construct2DArray(data, this.state.dataInfo.cellsX, this.state.dataInfo.cellsY)
-      results = { z: [...data], labels: { y: this.getAttributeNames(this.job.attributes[0].name), x: this.getAttributeNames(this.job.attributes[1].name) } }
+      results = { z: [...data], labels: { y: this.getAttributeNames(this.job.data.attributes[0].name), x: this.getAttributeNames(this.job.data.attributes[1].name) } }
     }
 
-    if (this.job.algorithm === '1d_numerical_histogram') {
+    if (this.job.data.algorithm === '1d_numerical_histogram') {
       const m = this.getMinMax(data[0])
       data = data.slice(1)
-      results = { ...m, y: data.map(item => item.replace(/\s/g, '').split(',')[1]), cells: this.getCell(this.job.attributes[0]) }
+      results = { ...m, y: data.map(item => item.replace(/\s/g, '').split(',')[1]), cells: this.getCell(this.job.data.attributes[0]) }
     }
 
-    if (this.job.algorithm === '2d_numerical_histogram') {
+    if (this.job.data.algorithm === '2d_numerical_histogram') {
       const m0 = this.getMinMax(data[0])
       const m1 = this.getMinMax(data[1])
-      let cellsX = this.getCell(this.job.attributes[0])
-      let cellsY = this.getCell(this.job.attributes[1])
+      let cellsX = this.getCell(this.job.data.attributes[0])
+      let cellsY = this.getCell(this.job.data.attributes[1])
 
       data = data.slice(2)
       data = this.construct2DArray(data, cellsX, cellsY)

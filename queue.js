@@ -36,8 +36,8 @@ queue.on('ready', () => {
   queue.process(async (job) => {
     console.log(`Processing job ${job.id}`)
     try {
-      const results = await compute({ ...job.data })
       updateJobStatus(job, status.PROCESSING)
+      const results = await compute(job)
       return results
     } catch (e) {
       console.error(e)

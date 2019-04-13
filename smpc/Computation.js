@@ -44,6 +44,8 @@ class Computation {
 
   _execute (resolve, reject) {
     console.log('Initiating SMPC Engine...')
+    this.job.reportProgress(0) // Next release will inlude the feature to pass arbitrary data in reportProgress
+    // this.job.reportProgress({ step: this.state.step }) // Next release will inlude the feature to pass arbitrary data in reportProgress
     this.resolve = resolve
     this.reject = reject
     this.setupPlayers()
@@ -82,7 +84,7 @@ class Computation {
       const ws = this.players[index].socket
 
       ws.on('open', () => {
-        ws.send(pack({ message: 'job-info', job: this.job }))
+        ws.send(pack({ message: 'job-info', job: this.job.data }))
         console.log(`Connected to player ${index}.`)
       })
 
@@ -115,8 +117,8 @@ class Computation {
 
       ws.on('open', () => {
         console.log(`Connected to client ${index}.`)
-        ws.send(pack({ message: 'job-info', job: this.job }))
-        ws.send(pack({ message: 'data-info', job: this.job }))
+        ws.send(pack({ message: 'job-info', job: this.job.data }))
+        ws.send(pack({ message: 'data-info', job: this.job.data }))
       })
 
       ws.on('close', (code, reason) => {
@@ -193,9 +195,9 @@ class Computation {
     this.processDataInfo(data.datasetInfo)
 
     if (this.state.dataInfoReceived === this.clients.length) {
-      this.state.step = step.DATA_SIZE_ACCEPTED
+      this.updateStep(step.DATA_SIZE_ACCEPTED)
       this.state.dataInfoReceived = 0
-      this.sendToAll(pack({ message: 'compile', job: this.job, dataInfo: this.state.dataInfo }), this.players)
+      this.sendToAll(pack({ message: 'compile', job: this.job.data, dataInfo: this.state.dataInfo }), this.players)
     }
   }
 
@@ -203,15 +205,15 @@ class Computation {
     this.state.compiled += 1
     if (this.state.compiled === this.players.length) {
       console.log('Compilation finished.')
-      this.state.step = step.COMPILE_END
+      this.updateStep(step.COMPILE_END)
       this.state.compiled = 0
-      this.sendToAll(pack({ message: 'start', job: this.job }), this.players)
+      this.sendToAll(pack({ message: 'start', job: this.job.data }), this.players)
     }
   }
 
   handleComputationFinished ({ data }) {
     console.log('Computation Finished')
-    this.state.step = step.COMPUTATION_END
+    this.updateStep(step.COMPUTATION_END)
     this.state.exit = 0
     this.cleanUpPlayers()
     this.cleanUpClients()
@@ -239,7 +241,7 @@ class Computation {
 
   handleImportationFinished () {
     console.log('Importation Finished')
-    this.state.step = step.IMPORT_END
+    this.updateStep(step.IMPORT_END)
   }
 
   execute () {
@@ -247,7 +249,7 @@ class Computation {
   }
 
   restart () {
-    const msg = pack({ message: 'restart', job: this.job })
+    const msg = pack({ message: 'restart', job: this.job.data })
     this.sendToAll(msg, this.players)
     this.sendToAll(msg, this.clients)
   }
@@ -264,10 +266,16 @@ class Computation {
     this.state.listen += 1
     if (this.state.listen === this.players.length) {
       console.log('Players are listening...')
-      this.state.step = step.IMPORT_START
+      this.updateStep(step.IMPORT_START)
       this.state.listen = 0
-      this.sendToAll(pack({ message: 'import', job: this.job }), this.clients)
+      this.sendToAll(pack({ message: 'import', job: this.job.data }), this.clients)
     }
+  }
+
+  updateStep (_step) {
+    this.state.step = _step
+    // this.job.reportProgress({ step: this.state.step }) // Next release will inlude the feature to pass arbitrary data in reportProgress
+    this.job.reportProgress((_step / (Object.keys(step).length - 1)) * 100)
   }
 
   cleanUpClients () {
