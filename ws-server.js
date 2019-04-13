@@ -1,7 +1,7 @@
 const WebSocket = require('ws')
 
 const { appEmitter } = require('./emitters.js')
-const { pack } = require('./helpers.js')
+const { pack, unpack } = require('./helpers.js')
 const { status } = require('./config/constants')
 
 const startPing = ({ wss, interval = 30 * 1000 }) =>
@@ -11,7 +11,7 @@ const startPing = ({ wss, interval = 30 * 1000 }) =>
         return ws.terminate()
       }
       ws.isAlive = false
-      ws.ping(() => null)
+      ws.send(pack({ message: 'ping' }))
     })
   }, interval)
 
@@ -29,7 +29,12 @@ const setupWss = async (server, sessionMiddleware) => {
     ws.isAlive = true
 
     ws.on('pong', () => (ws.isAlive = true))
-    ws.on('message', () => {}) // silent client message
+    ws.on('message', (msg) => {
+      msg = unpack(msg)
+      if (msg.message === 'pong') {
+        ws.isAlive = true
+      }
+    }) // silent client message
 
     appEmitter.on('update-computation', (msg) => {
       if (ws.readyState === WebSocket.OPEN) {
@@ -39,7 +44,7 @@ const setupWss = async (server, sessionMiddleware) => {
     })
   })
 
-  // startPing({ wss, interval: 30 * 1000 })
+  startPing({ wss, interval: 30 * 1000 }) // 30 seconds
 }
 
 module.exports = { setupWss }
