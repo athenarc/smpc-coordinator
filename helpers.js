@@ -12,36 +12,6 @@ const unpack = (msg) => {
   return JSON.parse(msg)
 }
 
-const isAttribute = (attr) => {
-  for (const a of attr) {
-    if (_.isEmpty(a)) {
-      return false
-    }
-  }
-
-  return attr.every(r => totalAttributes.some((a) => a.name === r.name))
-}
-
-const validateRequest = (req) => {
-  if (!req.attributes || !_.isArray(req.attributes)) {
-    return { success: false, msg: 'Bad request' }
-  }
-
-  if (req.attributes.length > 2) {
-    return { success: false, msg: 'No more than two attributes are allowed' }
-  }
-
-  if (!isAttribute(req.attributes)) {
-    return { success: false, msg: 'Bad request or attribute not found' }
-  }
-
-  if (req.attributes.length === 2 && req.attributes[0].name === req.attributes[1].name) {
-    return { success: false, msg: 'Same attributes are not allowed' }
-  }
-
-  return { success: true }
-}
-
 const getHistogramType = (attr) => {
   let types = attr.map(a => totalAttributes.find((b) => b.name === a.name)).map(item => item.type).sort()
 
@@ -62,7 +32,6 @@ const sha256 = (data) => {
 }
 
 module.exports = {
-  validateRequest,
   getHistogramType,
   pack,
   unpack,

@@ -6,25 +6,14 @@ const { status } = require('../config/constants')
 const { HTTPError } = require('../errors')
 const { validateRequest, getHistogramType, sha256 } = require('../helpers')
 const { addJob } = require('../queue')
+const validateHistogram = require('../validators/histogram')
 
 let router = express.Router()
 
-const createSimpleSMPCRouter = (router, path) => {
-  router.post(path, async (req, res, next) => {
-    const results = validateRequest(req.body)
-
-    if (!results.success) {
-      next(new HTTPError(400, results.msg))
-      return
-    }
-
-    let algorithm = getHistogramType(req.body.attributes)
+const createSimpleSMPCRouter = (router, path, validators) => {
+  router.post(path, validators, async (req, res, next) => {
+    let algorithm = getHistogramType(req.body.attributes) // TODO: Refactor. Should be moved elsewhere. The function is generic.
     algorithm = Object.keys(algorithm)[0]
-
-    if (algorithm === undefined) {
-      next(new HTTPError(400, results.msg))
-      return
-    }
 
     const job = { attributes: req.body.attributes, filters: req.body.filters, algorithm }
 
@@ -93,6 +82,6 @@ router.get('/results/:id', async (req, res, next) => {
   res.status(200).json()
 })
 
-router = createSimpleSMPCRouter(router, '/histogram')
+router = createSimpleSMPCRouter(router, '/histogram', [validateHistogram])
 
 module.exports = router
