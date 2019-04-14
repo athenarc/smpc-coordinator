@@ -24,6 +24,13 @@ const validateHistogram = (req, res, next) => {
     return
   }
 
+  for (let attr of req.body.attributes) {
+    if (attr.cells && attr.cells <= 0) {
+      next(new HTTPError(400, 'Cell must be a positive number'))
+      return
+    }
+  }
+
   let algorithm = getHistogramType(req.body.attributes)
   algorithm = Object.keys(algorithm)[0]
 
