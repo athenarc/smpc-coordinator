@@ -1,34 +1,29 @@
 const express = require('express')
-const uuidv4 = require('uuid/v4')
 
 const { db, addJobToDB } = require('../db')
 const { status } = require('../config/constants')
 const { HTTPError } = require('../errors')
-const { getHistogramType } = require('../helpers')
 const { addJobToQueue } = require('../queue')
 const validateHistogram = require('../validators/histogram')
+const preprocess = require('../middlewares/preprocess')
+const cache = require('../middlewares/cache')
 
 let router = express.Router()
 
-const createSimpleSMPCRouter = (router, path, validators) => {
-  router.post(path, validators, async (req, res, next) => {
-    let algorithm = getHistogramType(req.body.attributes) // TODO: Refactor. Should be moved elsewhere. The function is generic.
-    algorithm = Object.keys(algorithm)[0]
-
-    const job = { attributes: req.body.attributes, filters: req.body.filters, algorithm, timestamps: { accepted: Date.now() } }
+const createSimpleSMPCRouter = (router, path, middlewares) => {
+  router.post(path, middlewares, async (req, res, next) => {
+    const job = { ...req.body, timestamps: { accepted: Date.now() } }
 
     try {
-      const id = uuidv4()
-      job.id = id
       job.status = status.PENDING
-
-      const location = `/api/smpc/queue/${id}`
+      const location = `/api/smpc/queue/${job.id}`
       res.set('Location', location)
       res.status(202).json({ location, ...job, status: status.properties[status.PENDING].msg })
 
       addJobToDB({ ...job })
       addJobToQueue({ ...job })
     } catch (err) {
+      job.status = status.FAILED
       next(err)
     }
   })
@@ -79,6 +74,6 @@ router.get('/results/:id', async (req, res, next) => {
   res.status(200).json()
 })
 
-router = createSimpleSMPCRouter(router, '/histogram', [validateHistogram])
+router = createSimpleSMPCRouter(router, '/histogram', [validateHistogram, preprocess, cache])
 
 module.exports = router
