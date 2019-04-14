@@ -1,9 +1,10 @@
 const Queue = require('bee-queue')
 const { compute } = require('./smpc/smpc')
 const { HTTPError } = require('./errors')
-const { status, step } = require('./config/constants')
+const { status } = require('./config/constants')
 const { appEmitter } = require('./emitters.js')
-const { updateJobStatus } = require('./helpers.js')
+const { updateJobStatus, sha256 } = require('./helpers.js')
+const { addToCache } = require('./cache.js')
 
 const queue = new Queue('smpc', { delayedDebounce: 3000 })
 
@@ -29,6 +30,8 @@ const addJobToQueue = (jobDescription) => {
 const onSucceeded = async (job, results) => {
   console.log(`Done: ${job.id}`)
   job.data = { ...job.data, 'status': status.COMPLETED, results, timestamps: { ...job.data.timestamps, done: Date.now() } }
+  const key = sha256(JSON.stringify({ attributes: job.data.attributes, filters: job.data.filters, algorithm: job.data.algorithm }))
+  await addToCache(key, job.data)
   appEmitter.emit('update-computation', { ...job.data })
 }
 
