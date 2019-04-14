@@ -15,9 +15,14 @@ const updateJob = async (job) => {
   await db.put(job.id, { ...job })
 }
 
+const getJob = async (id) => {
+  const out = await db.get(id)
+  return out
+}
+
 module.exports = {
   db,
-  cachedb,
   addJobToDB,
-  updateJob
+  updateJob,
+  getJob
 }
