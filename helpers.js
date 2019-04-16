@@ -15,11 +15,10 @@ const unpack = (msg) => {
 
 const getHistogramType = (attr) => {
   let types = attr.map(a => totalAttributes.find((b) => b.name === a.name)).map(item => item.type).sort()
-
-  let candidates = algorithms[0]['histograms'].filter((item) => Object.values(item)[0].attributes.length === types.length)
+  let candidates = algorithms.filter((item) => item.attributes.length === types.length)
 
   let algorithm = candidates.find((item) => {
-    let attr = item[Object.keys(item)[0]].attributes.sort()
+    let attr = item.attributes.sort()
     return _.difference(attr, types).length === 0
   })
 

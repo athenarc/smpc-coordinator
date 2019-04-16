@@ -32,9 +32,8 @@ const validateHistogram = (req, res, next) => {
   }
 
   let algorithm = getHistogramType(req.body.attributes)
-  algorithm = Object.keys(algorithm)[0]
 
-  if (algorithm === undefined) {
+  if (algorithm === undefined || algorithm.name === undefined) {
     next(new HTTPError(400, 'Unsupported algorithm'))
     return
   }
