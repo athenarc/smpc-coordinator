@@ -1,5 +1,4 @@
 const Computation = require('./Computation')
-const algorithms = require('../smpc-global/algorithms.json')
 const attributes = require('../smpc-global/attributes.json')
 const mapping = require('../smpc-global/mapping.json')
 
@@ -13,8 +12,6 @@ class HistogramComputation extends Computation {
       cellsY: null,
       dataSize: 0
     }
-
-    this.algorithms = algorithms[0]['histograms'].map(a => Object.keys(a)[0])
   }
 
   processDataInfo (info) {
