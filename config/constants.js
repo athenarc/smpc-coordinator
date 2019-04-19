@@ -1,3 +1,5 @@
+const fs = require('fs')
+
 const status = {
   PENDING: 0,
   PROCESSING: 1,
@@ -34,7 +36,10 @@ const step = {
   }
 }
 
+const ROOT_CA = fs.readFileSync(process.env.ROOT_CA, { encoding: 'utf-8' })
+
 module.exports = {
   status: Object.freeze(status),
-  step: Object.freeze(step)
+  step: Object.freeze(step),
+  ROOT_CA
 }
