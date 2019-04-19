@@ -19,6 +19,10 @@ const { setupWss } = require('./ws-server.js')
 const app = express()
 app.queue = queue
 
+if (_.isEmpty(process.env.ROOT_CA)) {
+  throw new Error('HTTPS root CA path must be defined!')
+}
+
 if (_.isEmpty(process.env.SMPC_ENGINE)) {
   throw new Error('SMPC Engine absolute path not defined!')
 }
