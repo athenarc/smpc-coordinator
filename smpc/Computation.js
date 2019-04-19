@@ -1,14 +1,16 @@
-const PLAYER_1 = process.env.PLAYER_1 || 'ws://localhost:3005'
-const PLAYER_2 = process.env.PLAYER_2 || 'ws://localhost:3006'
-const PLAYER_3 = process.env.PLAYER_3 || 'ws://localhost:3007'
-const CLIENT_1 = process.env.CLIENT_1 || 'ws://localhost:3008'
-const CLIENT_2 = process.env.CLIENT_2 || 'ws://localhost:3009'
-const CLIENT_3 = process.env.CLIENT_3 || 'ws://localhost:3010'
-
 const WebSocket = require('ws')
 const EventEmitter = require('events')
+
+const PLAYER_1 = process.env.PLAYER_1 || 'wss://localhost:3005'
+const PLAYER_2 = process.env.PLAYER_2 || 'wss://localhost:3006'
+const PLAYER_3 = process.env.PLAYER_3 || 'wss://localhost:3007'
+const CLIENT_1 = process.env.CLIENT_1 || 'wss://localhost:3008'
+const CLIENT_2 = process.env.CLIENT_2 || 'wss://localhost:3009'
+const CLIENT_3 = process.env.CLIENT_3 || 'wss://localhost:3010'
+
+
 const { pack, unpack } = require('../helpers')
-const { step } = require('../config/constants')
+const { step, ROOT_CA } = require('../config/constants')
 
 class Computation {
   constructor (job) {
@@ -79,7 +81,7 @@ class Computation {
 
   setupPlayers () {
     for (const [index, p] of this.players.entries()) {
-      this.players[index].socket = new WebSocket(p.address) // connection errors are handle on ws.on('error')
+      this.players[index].socket = new WebSocket(p.address, { ca: ROOT_CA }) // connection errors are handle on ws.on('error')
       this.players[index].socket._index = index
       const ws = this.players[index].socket
 
@@ -111,7 +113,7 @@ class Computation {
 
   setupClients () {
     for (const [index, c] of this.clients.entries()) {
-      this.clients[index].socket = new WebSocket(c.address)
+      this.clients[index].socket = new WebSocket(c.address, { ca: ROOT_CA })
       this.clients[index].socket._index = index
       const ws = this.clients[index].socket
 
@@ -164,6 +166,7 @@ class Computation {
   }
 
   handleError ({ data }) {
+    console.log(data)
     this.restart()
     this.reject(new Error('An error has occured!'))
   }
