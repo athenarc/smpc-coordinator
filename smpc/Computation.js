@@ -8,9 +8,8 @@ const CLIENT_1 = process.env.CLIENT_1 || 'wss://localhost:3008'
 const CLIENT_2 = process.env.CLIENT_2 || 'wss://localhost:3009'
 const CLIENT_3 = process.env.CLIENT_3 || 'wss://localhost:3010'
 
-
 const { pack, unpack } = require('../helpers')
-const { step, ROOT_CA } = require('../config/constants')
+const { step, ROOT_CA, KEY, CERT } = require('../config/constants')
 
 class Computation {
   constructor (job) {
@@ -37,6 +36,14 @@ class Computation {
       exit: 0,
       step: step.INIT,
       results: ''
+    }
+
+    this.opts = {
+      ca: ROOT_CA,
+      key: KEY,
+      cert: CERT,
+      rejectUnauthorized: true,
+      requestCert: true
     }
 
     this.resolve = null
@@ -81,7 +88,7 @@ class Computation {
 
   setupPlayers () {
     for (const [index, p] of this.players.entries()) {
-      this.players[index].socket = new WebSocket(p.address, { ca: ROOT_CA }) // connection errors are handle on ws.on('error')
+      this.players[index].socket = new WebSocket(p.address, { ...this.opts }) // connection errors are handle on ws.on('error')
       this.players[index].socket._index = index
       const ws = this.players[index].socket
 
@@ -113,7 +120,7 @@ class Computation {
 
   setupClients () {
     for (const [index, c] of this.clients.entries()) {
-      this.clients[index].socket = new WebSocket(c.address, { ca: ROOT_CA })
+      this.clients[index].socket = new WebSocket(c.address, { ...this.opts })
       this.clients[index].socket._index = index
       const ws = this.clients[index].socket
 

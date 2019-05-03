@@ -23,6 +23,14 @@ if (_.isEmpty(process.env.ROOT_CA)) {
   throw new Error('HTTPS root CA path must be defined!')
 }
 
+if (_.isEmpty(process.env.KEY)) {
+  throw new Error('HTTPS key path must be defined!')
+}
+
+if (_.isEmpty(process.env.CERT)) {
+  throw new Error('HTTPS cert path must be defined!')
+}
+
 if (_.isEmpty(process.env.SMPC_ENGINE)) {
   throw new Error('SMPC Engine absolute path not defined!')
 }
