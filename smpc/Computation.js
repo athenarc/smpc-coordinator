@@ -108,6 +108,7 @@ class Computation {
       })
 
       ws.on('error', (err) => {
+        console.log(err)
         this.handleError(err)
       })
 
