@@ -39,11 +39,13 @@ const step = {
 const ROOT_CA = fs.readFileSync(process.env.ROOT_CA, { encoding: 'utf-8' })
 const CERT = fs.readFileSync(process.env.CERT, { encoding: 'utf-8' })
 const KEY = fs.readFileSync(process.env.KEY, { encoding: 'utf-8' })
+const JWT_SECRET = process.env.JWT_SECRET || 'smpc-coordinator jwt secret'
 
 module.exports = {
   status: Object.freeze(status),
   step: Object.freeze(step),
   ROOT_CA,
   CERT,
-  KEY
+  KEY,
+  JWT_SECRET
 }
