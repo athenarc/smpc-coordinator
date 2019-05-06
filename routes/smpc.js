@@ -1,5 +1,6 @@
 const express = require('express')
 
+const passport = require('../auth')
 const { db, addJobToDB } = require('../db')
 const { status } = require('../config/constants')
 const { HTTPError } = require('../errors')
@@ -74,6 +75,6 @@ router.get('/results/:id', async (req, res, next) => {
   res.status(200).json()
 })
 
-router = createSimpleSMPCRouter(router, '/histogram', [validateHistogram, preprocess, cache])
+router = createSimpleSMPCRouter(router, '/histogram', [passport.authenticate('jwt', { session: false }), validateHistogram, preprocess, cache])
 
 module.exports = router
