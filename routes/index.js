@@ -1,5 +1,6 @@
 const express = require('express')
 const smpc = require('./smpc')
+const auth = require('./auth')
 
 const router = express.Router()
 
@@ -8,5 +9,6 @@ router.get('/health', (_, res) => res.status(204).send())
 
 module.exports = {
   '/api': router,
-  '/api/smpc': smpc
+  '/api/smpc': smpc,
+  '/api/auth': auth
 }
