@@ -10,6 +10,7 @@ const helmet = require('helmet')
 const cors = require('cors')
 const session = require('express-session')
 const RedisStore = require('connect-redis')(session)
+const passport = require('./auth')
 const routes = require('./routes')
 const queue = require('./queue')
 const logger = require('./config/winston')
@@ -51,6 +52,7 @@ if (_.isEmpty(process.env.SMPC_ENGINE)) {
   })
 
   app.use(sessionMiddleware)
+  app.use(passport.initialize())
 
   for (const url in routes) {
     app.use(url, routes[url])
