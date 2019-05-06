@@ -27,6 +27,7 @@
     "ignore": []
   },
   "dependencies": {
+    "bcrypt": "^3.0.6",
     "bee-queue": "^1.2.2",
     "body-parser": "^1.18.3",
     "connect-redis": "^3.4.1",
