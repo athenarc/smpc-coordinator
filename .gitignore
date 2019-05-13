@@ -112,6 +112,7 @@ Temporary Items
 
 smpc-db
 smpc-cache
+smpc-user-db
 
 certs
 .env.production
