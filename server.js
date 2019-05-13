@@ -31,9 +31,6 @@ if (_.isEmpty(process.env.CERT)) {
   throw new Error('HTTPS cert path must be defined!')
 }
 
-if (_.isEmpty(process.env.SMPC_ENGINE)) {
-  throw new Error('SMPC Engine absolute path not defined!')
-}
 
 ;(() => {
   app.set('trust proxy', '127.0.0.1')
