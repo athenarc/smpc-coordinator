@@ -1,3 +1,5 @@
+/* global URL */
+
 const Queue = require('bee-queue')
 const { compute } = require('./smpc/smpc')
 const { HTTPError } = require('./errors')
@@ -6,7 +8,14 @@ const { appEmitter } = require('./emitters.js')
 const { updateJobStatus, sha256 } = require('./helpers.js')
 const { addToCache } = require('./cache.js')
 
-const queue = new Queue('smpc', { delayedDebounce: 3000 })
+const redisURL = new URL(process.env.REDIS_URL || 'redis://localhost:6379')
+
+const redis = {
+  host: redisURL.hostname,
+  port: redisURL.port
+}
+
+const queue = new Queue('smpc', { delayedDebounce: 3000, redis })
 
 const addJobToQueue = (jobDescription) => {
   const job = queue.createJob({ ...jobDescription })
