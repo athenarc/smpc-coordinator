@@ -114,3 +114,4 @@ smpc-db
 smpc-cache
 
 certs
+.env.production
