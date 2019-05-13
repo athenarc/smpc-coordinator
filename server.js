@@ -1,9 +1,21 @@
 require('dotenv').config()
+const _ = require('lodash')
 
 const LISTEN_PORT = process.env.PORT || 3000
 const ENV = process.env.NODE_ENV || 'development'
 
-const _ = require('lodash')
+if (_.isEmpty(process.env.ROOT_CA)) {
+  throw new Error('HTTPS root CA path must be defined!')
+}
+
+if (_.isEmpty(process.env.KEY)) {
+  throw new Error('HTTPS key path must be defined!')
+}
+
+if (_.isEmpty(process.env.CERT)) {
+  throw new Error('HTTPS cert path must be defined!')
+}
+
 const express = require('express')
 const bodyParser = require('body-parser')
 const helmet = require('helmet')
@@ -19,20 +31,7 @@ const { setupWss } = require('./ws-server.js')
 const app = express()
 app.queue = queue
 
-if (_.isEmpty(process.env.ROOT_CA)) {
-  throw new Error('HTTPS root CA path must be defined!')
-}
-
-if (_.isEmpty(process.env.KEY)) {
-  throw new Error('HTTPS key path must be defined!')
-}
-
-if (_.isEmpty(process.env.CERT)) {
-  throw new Error('HTTPS cert path must be defined!')
-}
-
-
-;(() => {
+; (() => {
   app.set('trust proxy', '127.0.0.1')
   app.disable('x-powered-by')
   app.use(helmet())
