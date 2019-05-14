@@ -57,6 +57,13 @@ typings/
 # dotenv environment variables file
 .env
 .env.test
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+.env.*
 
 # parcel-bundler cache (https://parceljs.org/)
 .cache
@@ -115,4 +122,4 @@ smpc-cache
 smpc-user-db
 
 certs
-.env.production
+.env.*
