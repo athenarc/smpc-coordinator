@@ -40,10 +40,13 @@ const ROOT_CA = fs.readFileSync(process.env.ROOT_CA, { encoding: 'utf-8' })
 const CERT = fs.readFileSync(process.env.CERT, { encoding: 'utf-8' })
 const KEY = fs.readFileSync(process.env.KEY, { encoding: 'utf-8' })
 
+const REDIS_URL = process.env.REDIS_URL || 'redis://localhost:6379'
+
 module.exports = {
   status: Object.freeze(status),
   step: Object.freeze(step),
   ROOT_CA,
   CERT,
-  KEY
+  KEY,
+  REDIS_URL
 }

@@ -3,12 +3,12 @@
 const Queue = require('bee-queue')
 const { compute } = require('./smpc/smpc')
 const { HTTPError } = require('./errors')
-const { status } = require('./config/constants')
+const { status, REDIS_URL } = require('./config/constants')
 const { appEmitter } = require('./emitters.js')
 const { updateJobStatus, sha256 } = require('./helpers.js')
 const { addToCache } = require('./cache.js')
 
-const redisURL = new URL(process.env.REDIS_URL || 'redis://localhost:6379')
+const redisURL = new URL(REDIS_URL)
 
 const redis = {
   host: redisURL.hostname,
