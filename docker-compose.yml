@@ -1,0 +1,28 @@
+version: '3.7'
+services:
+  coordinator:
+    container_name: smpc_coordinator
+    image: smpc_coordinator:latest
+    build:
+      context: ./
+    env_file:
+      - .env.production
+    volumes:
+      - ./certs:/smpc-coordinator/certs
+    ports:
+      - 3000:3000
+    depends_on:
+      - redis
+    networks:
+      - coordinator
+  redis:
+    image: redis
+    container_name: redis
+    ports:
+      - 6379:6379
+    networks:
+      - coordinator
+
+networks:
+  coordinator:
+    name: smpc_coordinator
