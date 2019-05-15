@@ -77,7 +77,7 @@ class Computation {
         return
       }
 
-      if (msg.code && msg.code !== 0) {
+      if (msg.data.code && msg.data.code !== 0) {
         this.handleError(msg)
         return
       }
