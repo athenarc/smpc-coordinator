@@ -32,4 +32,10 @@ const logger = createLogger({
   exitOnError: false
 })
 
+logger.stream = {
+  write: function (message, encoding) {
+    logger.info(message)
+  }
+}
+
 module.exports = logger
