@@ -5,7 +5,8 @@ const logger = createLogger({
   format: format.combine(
     format.colorize(),
     format.splat(),
-    format.simple()
+    format.simple(),
+    format.timestamp()
   ),
   transports: [
     new transports.Console()
