@@ -29,6 +29,7 @@ const logger = createLogger({
     new transports.Console(),
     new transports.File(options.file)
   ],
+  exitOnError: false
 })
 
 module.exports = logger
