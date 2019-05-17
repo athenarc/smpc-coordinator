@@ -22,6 +22,7 @@ const helmet = require('helmet')
 const cors = require('cors')
 const session = require('express-session')
 const RedisStore = require('connect-redis')(session)
+const morgan = require('morgan')
 const routes = require('./routes')
 const queue = require('./queue')
 const logger = require('./config/winston')
@@ -37,6 +38,7 @@ app.queue = queue
   app.use(helmet())
   app.use(cors({ methods: ['GET', 'POST'] }))
   app.use(bodyParser.json())
+  app.use(morgan('combined', { stream: logger.stream }))
 
   const sessionMiddleware = session({
     store: new RedisStore(),
