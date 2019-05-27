@@ -8,29 +8,29 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-              - yarn-v1-coordinator{{ checksum "./smpc-coordinator/yarn.lock" }}-{{ arch }}
+              - yarn-v1-coordinator{{ checksum "./coordinator/yarn.lock" }}-{{ arch }}
               - yarn-v1-coordinator
 
       - restore_cache:
           keys:
-              - node-v1-coordinator{{ checksum "./smpc-coordinator/package.json" }}-{{ arch }}
+              - node-v1-coordinator{{ checksum "./coordinator/package.json" }}-{{ arch }}
               - node-v1-coordinator
 
       # install dependencies
-      - run: cd smpc-coordinator && yarn install
+      - run: cd coordinator && yarn install
 
       - save_cache:
-          key: yarn-v1-coordinator{{ checksum "./smpc-coordinator/yarn.lock" }}-{{ arch }}
+          key: yarn-v1-coordinator{{ checksum "./coordinator/yarn.lock" }}-{{ arch }}
           paths:
             - ~/.cache/yarn
 
       - save_cache:
-          key: node-v1-coordinator{{ checksum "./smpc-coordinator/package.json" }}-{{ arch }}
+          key: node-v1-coordinator{{ checksum "./coordinator/package.json" }}-{{ arch }}
           paths:
-            - ./smpc-coordinator/node_modules
+            - ./coordinator/node_modules
 
       # run linter!
-      - run: cd smpc-coordinator && yarn lint
+      - run: cd coordinator && yarn lint
 
 workflows:
   version: 2
