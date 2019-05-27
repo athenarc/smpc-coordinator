@@ -8,29 +8,29 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-              - yarn-v1-coordinator{{ checksum "./coordinator/yarn.lock" }}-{{ arch }}
+              - yarn-v1-coordinator{{ checksum "./yarn.lock" }}-{{ arch }}
               - yarn-v1-coordinator
 
       - restore_cache:
           keys:
-              - node-v1-coordinator{{ checksum "./coordinator/package.json" }}-{{ arch }}
+              - node-v1-coordinator{{ checksum "./package.json" }}-{{ arch }}
               - node-v1-coordinator
 
       # install dependencies
-      - run: cd coordinator && yarn install
+      - run: yarn install
 
       - save_cache:
-          key: yarn-v1-coordinator{{ checksum "./coordinator/yarn.lock" }}-{{ arch }}
+          key: yarn-v1-coordinator{{ checksum "./yarn.lock" }}-{{ arch }}
           paths:
             - ~/.cache/yarn
 
       - save_cache:
-          key: node-v1-coordinator{{ checksum "./coordinator/package.json" }}-{{ arch }}
+          key: node-v1-coordinator{{ checksum "./package.json" }}-{{ arch }}
           paths:
-            - ./coordinator/node_modules
+            - ./node_modules
 
       # run linter!
-      - run: cd coordinator && yarn lint
+      - run: yarn lint
 
 workflows:
   version: 2
