@@ -1,3 +1,5 @@
+[![CircleCI](https://circleci.com/gh/Athena-MHMD/smpc-coordinator.svg?style=svg&circle-token=0c78525c9f62033c405c3d4f57eed45c5298dcca)](https://circleci.com/gh/Athena-MHMD/smpc-coordinator)
+
 # smpc-coordinator
 
 
