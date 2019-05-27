@@ -1,0 +1,39 @@
+version: 2
+jobs:
+  coordinator:
+    docker:
+      - image: circleci/node:10.8.0
+    working_directory: ~/repo
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+              - yarn-v1-coordinator{{ checksum "./smpc-coordinator/yarn.lock" }}-{{ arch }}
+              - yarn-v1-coordinator
+
+      - restore_cache:
+          keys:
+              - node-v1-coordinator{{ checksum "./smpc-coordinator/package.json" }}-{{ arch }}
+              - node-v1-coordinator
+
+      # install dependencies
+      - run: cd smpc-coordinator && yarn install
+
+      - save_cache:
+          key: yarn-v1-coordinator{{ checksum "./smpc-coordinator/yarn.lock" }}-{{ arch }}
+          paths:
+            - ~/.cache/yarn
+
+      - save_cache:
+          key: node-v1-coordinator{{ checksum "./smpc-coordinator/package.json" }}-{{ arch }}
+          paths:
+            - ./smpc-coordinator/node_modules
+
+      # run linter!
+      - run: cd smpc-coordinator && yarn lint
+
+workflows:
+  version: 2
+  coordinator:
+    jobs:
+      - coordinator
