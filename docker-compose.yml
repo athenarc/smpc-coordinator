@@ -9,6 +9,8 @@ services:
       - .env.production
     volumes:
       - ./certs:/smpc-coordinator/certs
+      - smpc-db:/smpc-coordinator/smpc-db
+      - smpc-cache:/smpc-coordinator/smpc-cache
     ports:
       - 3000:3000
     depends_on:
@@ -26,3 +28,7 @@ services:
 networks:
   coordinator:
     name: smpc_coordinator
+
+volumes:
+  smpc-db:
+  smpc-cache:
