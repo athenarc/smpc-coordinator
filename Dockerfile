@@ -1,4 +1,4 @@
-FROM node:10-stretch
+FROM node:8.10.0-stretch
 
 RUN apt-get update && apt-get upgrade -y
 
