@@ -28,11 +28,14 @@ const queue = require('./queue')
 const logger = require('./config/winston')
 const { ErrorHandler, HTTPErrorHandler } = require('./middlewares/error')
 const { setupWss } = require('./ws-server.js')
+const Node = require('./blockchain')('hyperledger')
 
 const app = express()
+const node = new Node()
+
 app.queue = queue
 
-; (() => {
+;(async () => {
   app.set('trust proxy', '127.0.0.1')
   app.disable('x-powered-by')
   app.use(helmet())
@@ -57,9 +60,18 @@ app.queue = queue
   app.use(HTTPErrorHandler)
   app.use(ErrorHandler)
 
+  await node.connect()
+  await node.register()
+
+  app.node = node
+
   const server = app.listen(LISTEN_PORT, () => {
     logger.info('SMPC Coordinator running on port %d', LISTEN_PORT)
   })
 
   setupWss(server, sessionMiddleware)
 })()
+  .catch(err => {
+    logger.error(err)
+    process.exit(1)
+  })
