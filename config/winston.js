@@ -1,11 +1,14 @@
+const path = require('path')
 const { createLogger, format, transports } = require('winston')
+
+const LOG_PATH = process.env.LOG_PATH || 'logs'
 
 const options = {
   file: {
     level: 'info',
-    filename: `../logs/coordinator.log`,
     handleExceptions: true,
     json: true,
+    filename: path.resolve(LOG_PATH, 'coordinator.log'),
     maxsize: 5242880, // 5MB
     maxFiles: 5,
     colorize: false
