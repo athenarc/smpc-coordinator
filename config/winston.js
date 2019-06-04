@@ -6,30 +6,27 @@ const LOG_PATH = process.env.LOG_PATH || 'logs'
 const options = {
   file: {
     level: 'info',
-    handleExceptions: true,
-    json: true,
     filename: path.resolve(LOG_PATH, 'coordinator.log'),
     maxsize: 5242880, // 5MB
-    maxFiles: 5,
-    colorize: false
+    maxFiles: 5
   },
   console: {
-    level: 'debug',
-    handleExceptions: true,
-    json: false,
-    colorize: true
+    level: 'info',
+    format: format.combine(
+      format.colorize(),
+      format.simple()
+    )
   }
 }
 
 const logger = createLogger({
   format: format.combine(
-    format.colorize(),
     format.splat(),
-    format.simple(),
-    format.timestamp()
+    format.timestamp(),
+    format.simple()
   ),
   transports: [
-    new transports.Console(),
+    new transports.Console(options.console),
     new transports.File(options.file)
   ],
   exitOnError: false
