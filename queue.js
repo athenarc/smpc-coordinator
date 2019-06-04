@@ -6,6 +6,7 @@ const { status, REDIS_URL } = require('./config/constants')
 const { appEmitter } = require('./emitters.js')
 const { updateJobStatus, sha256 } = require('./helpers.js')
 const { addToCache } = require('./cache.js')
+const logger = require('./config/winston')
 
 const redisURL = new URL(REDIS_URL)
 
@@ -30,13 +31,13 @@ const addJobToQueue = (jobDescription) => {
 
   job.on('succeeded', (result) => onSucceeded(job, result))
   job.on('progress', (progress) => {
-    console.log(`Job ${job.id} reported progress ${progress}`) // Next release will inlude the feature to pass arbitrary data in reportProgress
-    // console.log(`Job ${job.id} reported progress: page ${step.properties[progress.step].msg}`) // Next release will inlude the feature to pass arbitrary data in reportProgress
+    logger.info(`Job ${job.id} reported progress ${progress}`) // Next release will inlude the feature to pass arbitrary data in reportProgress
+    // logger.info(`Job ${job.id} reported progress: page ${step.properties[progress.step].msg}`) // Next release will inlude the feature to pass arbitrary data in reportProgress
   })
 }
 
 const onSucceeded = async (job, results) => {
-  console.log(`Done: ${job.id}`)
+  logger.info(`Done: ${job.id}`)
   job.data = { ...job.data, 'status': status.COMPLETED, results, timestamps: { ...job.data.timestamps, done: Date.now() } }
   const key = sha256(JSON.stringify({ attributes: job.data.attributes, filters: job.data.filters, algorithm: job.data.algorithm }))
   await addToCache(key, job.data)
@@ -45,7 +46,7 @@ const onSucceeded = async (job, results) => {
 
 queue.on('ready', () => {
   queue.process(async (job) => {
-    console.log(`Processing job ${job.id}`)
+    logger.info(`Processing job ${job.id}`)
     try {
       job.data.status = status.PROCESSING
       job.data.timestamps = { ...job.data.timestamps, process: Date.now() }
@@ -58,25 +59,25 @@ queue.on('ready', () => {
     }
   })
 
-  console.log('Start processing jobs...')
+  logger.info('Start processing jobs...')
 })
 
 queue.on('error', (err) => {
-  console.log(`A queue error happened: ${err.message}`)
+  logger.error(`A queue error happened: ${err.message}`)
 })
 
 queue.on('retrying', async (job, err) => {
-  console.log(`Job ${job.id} failed with error ${err.message} but is being retried!`)
+  logger.error(`Job ${job.id} failed with error ${err.message} but is being retried!`)
   updateJobStatus(job, status.PENDING)
 })
 
 queue.on('failed', async (job, err) => {
-  console.log(`Job ${job.id} failed with error ${err.message}`)
+  logger.error(`Job ${job.id} failed with error ${err.message}`)
   updateJobStatus(job, status.FAILED)
 })
 
 queue.on('stalled', async (jobId) => {
-  console.log(`Job ${jobId} stalled and will be reprocessed`)
+  logger.warning(`Job ${jobId} stalled and will be reprocessed`)
 })
 
 module.exports = {

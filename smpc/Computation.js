@@ -10,6 +10,7 @@ const CLIENT_3 = process.env.CLIENT_3 || 'wss://localhost:3010'
 
 const { pack, unpack } = require('../helpers')
 const { step, ROOT_CA, KEY, CERT } = require('../config/constants')
+const logger = require('../config/winston')
 
 class Computation {
   constructor (job) {
@@ -52,7 +53,7 @@ class Computation {
   }
 
   _execute (resolve, reject) {
-    console.log('Initiating SMPC Engine...')
+    logger.info('Initiating SMPC Engine...')
     this.job.reportProgress(0) // Next release will inlude the feature to pass arbitrary data in reportProgress
     // this.job.reportProgress({ step: this.state.step }) // Next release will inlude the feature to pass arbitrary data in reportProgress
     this.resolve = resolve
@@ -92,11 +93,11 @@ class Computation {
 
       ws.on('open', () => {
         ws.send(pack({ message: 'job-info', job: this.job.data }))
-        console.log(`Connected to player ${index}.`)
+        logger.info(`Connected to player ${index}.`)
       })
 
       ws.on('close', (code, reason) => {
-        console.log(`Disconnected from player ${index} with code ${code}`)
+        logger.info(`Disconnected from player ${index}.`)
         this.players[ws._index].socket = null
 
         if (this.state.step < step.COMPUTATION_END) {
@@ -106,7 +107,7 @@ class Computation {
       })
 
       ws.on('error', (err) => {
-        console.log(err)
+        logger.error(err)
         this.handleError(err)
       })
 
@@ -124,13 +125,13 @@ class Computation {
       const ws = this.clients[index].socket
 
       ws.on('open', () => {
-        console.log(`Connected to client ${index}.`)
+        logger.info(`Connected to client ${index}.`)
         ws.send(pack({ message: 'job-info', job: this.job.data }))
         ws.send(pack({ message: 'data-info', job: this.job.data }))
       })
 
       ws.on('close', (code, reason) => {
-        console.log(`Disconnected from client ${index} with code ${code}`)
+        logger.info(`Disconnected from client ${index}.`)
         this.clients[ws._index].socket = null
         if (this.state.step < step.IMPORT_END) {
           this.restart()
@@ -167,12 +168,12 @@ class Computation {
         this.handleError({ data })
         break
       default:
-        console.log(data)
+        logger.info(data)
     }
   }
 
   handleError ({ data }) {
-    console.log(data)
+    logger.error(data)
     this.restart()
     this.reject(new Error('An error has occured!'))
   }
@@ -216,7 +217,7 @@ class Computation {
   handleCompilation ({ data }) {
     this.state.compiled += 1
     if (this.state.compiled === this.players.length) {
-      console.log('Compilation finished.')
+      logger.info('Compilation finished.')
       this.updateStep(step.COMPILE_END)
       this.state.compiled = 0
       this.sendToAll(pack({ message: 'start', job: this.job.data }), this.players)
@@ -224,7 +225,7 @@ class Computation {
   }
 
   handleComputationFinished ({ data }) {
-    console.log('Computation Finished')
+    logger.info('Computation Finished')
     this.updateStep(step.COMPUTATION_END)
     this.state.exit = 0
     this.cleanUpPlayers()
@@ -235,7 +236,6 @@ class Computation {
   }
 
   processResults () {
-
     let results = []
 
     if (this.state.dataInfo.dataSize === 0) {
@@ -258,7 +258,7 @@ class Computation {
   }
 
   handleImportationFinished () {
-    console.log('Importation Finished')
+    logger.info('Importation Finished')
     this.updateStep(step.IMPORT_END)
   }
 
@@ -283,7 +283,7 @@ class Computation {
   listen () {
     this.state.listen += 1
     if (this.state.listen === this.players.length) {
-      console.log('Players are listening...')
+      logger.info('Players are listening...')
       this.updateStep(step.IMPORT_START)
       this.state.listen = 0
       this.sendToAll(pack({ message: 'import', job: this.job.data }), this.clients)
