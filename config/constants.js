@@ -1,4 +1,13 @@
 const fs = require('fs')
+const path = require('path')
+
+const SMPC_DB_NAME = 'smpc-db'
+const CACHE_DB_NAME = 'smpc-cache'
+const USER_DB_NAME = 'smpc-user-db'
+
+const SMPC_DB_PATH = path.resolve(__dirname, '../', SMPC_DB_NAME)
+const CACHE_DB_PATH = path.resolve(__dirname, '../', CACHE_DB_NAME)
+const USER_DB_PATH = path.resolve(__dirname, '../', USER_DB_NAME)
 
 const status = {
   PENDING: 0,
@@ -48,5 +57,8 @@ module.exports = {
   ROOT_CA,
   CERT,
   KEY,
-  REDIS_URL
+  REDIS_URL,
+  SMPC_DB_PATH,
+  CACHE_DB_PATH,
+  USER_DB_PATH
 }
