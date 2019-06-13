@@ -1,7 +1,8 @@
 const level = require('level')
 const { appEmitter } = require('./emitters.js')
+const { SMPC_DB_PATH } = require('./config/constants')
 
-const db = level('./smpc-db', { valueEncoding: 'json' })
+const db = level(SMPC_DB_PATH, { valueEncoding: 'json' })
 
 appEmitter.on('update-computation', (msg) => {
   updateJob(msg)
