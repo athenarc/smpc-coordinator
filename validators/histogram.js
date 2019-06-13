@@ -10,6 +10,11 @@ const validateHistogram = (req, res, next) => {
     return
   }
 
+  if (req.body.attributes.length === 0) {
+    next(new HTTPError(400, 'At least one attribute should be provided'))
+    return
+  }
+
   if (req.body.attributes.length > 2) {
     next(new HTTPError(400, 'No more than two attributes are allowed'))
     return
