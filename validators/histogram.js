@@ -1,11 +1,11 @@
 const _ = require('lodash')
 const { HTTPError } = require('../errors')
 const totalAttributes = require('../smpc-global/attributes.json')
-const { getHistogramType } = require('../helpers')
+const algorithms = require('../smpc-global/algorithms.json')
 const meshTerms = require('../smpc-global/meshTerms.json')
 
 const validateHistogram = (req, res, next) => {
-  if (!req.body.attributes || !_.isArray(req.body.attributes)) {
+  if (!req.body.attributes || !_.isArray(req.body.attributes) || !req.body.algorithm) {
     next(new HTTPError(400, 'Bad request'))
     return
   }
@@ -37,9 +37,7 @@ const validateHistogram = (req, res, next) => {
     }
   }
 
-  let algorithm = getHistogramType(req.body.attributes)
-
-  if (algorithm === undefined || algorithm.name === undefined) {
+  if (!isProperAlgorithm(req.body.algorithm, req.body.attributes)) {
     next(new HTTPError(400, 'Unsupported algorithm'))
     return
   }
@@ -53,6 +51,10 @@ const isMeshTerm = (attr) => {
 
 const isAttribute = (attr) => { // eslint-disable-line no-unused-vars
   return attr.every(r => !_.isEmpty(r) && totalAttributes.some(a => a.name === r.name))
+}
+
+const isProperAlgorithm = (algo, attr) => {
+  return algorithms.some(a => a.name === algo && a.attributes.length === attr.length)
 }
 
 module.exports = validateHistogram
