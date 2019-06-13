@@ -2,6 +2,7 @@ const _ = require('lodash')
 const { HTTPError } = require('../errors')
 const totalAttributes = require('../smpc-global/attributes.json')
 const { getHistogramType } = require('../helpers')
+const meshTerms = require('../smpc-global/meshTerms.json')
 
 const validateHistogram = (req, res, next) => {
   if (!req.body.attributes || !_.isArray(req.body.attributes)) {
@@ -14,7 +15,7 @@ const validateHistogram = (req, res, next) => {
     return
   }
 
-  if (!isAttribute(req.body.attributes)) {
+  if (!isMeshTerm(req.body.attributes)) {
     next(new HTTPError(400, 'Bad request or attribute not found'))
     return
   }
@@ -41,14 +42,12 @@ const validateHistogram = (req, res, next) => {
   next()
 }
 
-const isAttribute = (attr) => {
-  for (const a of attr) {
-    if (_.isEmpty(a)) {
-      return false
-    }
-  }
+const isMeshTerm = (attr) => {
+  return attr.every(a => !_.isEmpty(a) && meshTerms.hasOwnProperty(a.name))
+}
 
-  return attr.every(r => totalAttributes.some((a) => a.name === r.name))
+const isAttribute = (attr) => { // eslint-disable-line no-unused-vars
+  return attr.every(r => !_.isEmpty(r) && totalAttributes.some(a => a.name === r.name))
 }
 
 module.exports = validateHistogram
