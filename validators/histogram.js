@@ -3,6 +3,7 @@ const { HTTPError } = require('../errors')
 const totalAttributes = require('../smpc-global/attributes.json')
 const algorithms = require('../smpc-global/algorithms.json')
 const meshTerms = require('../smpc-global/meshTerms.json')
+const meshAttributes = require('../smpc-global/meshAttributes.json')
 
 const validateHistogram = (req, res, next) => {
   if (!req.body.attributes || !_.isArray(req.body.attributes) || !req.body.algorithm) {
@@ -20,7 +21,7 @@ const validateHistogram = (req, res, next) => {
     return
   }
 
-  if (!isMeshTerm(req.body.attributes)) {
+  if (!isCorrectAttribute(req.body.attributes, req.body.algorithm)) {
     next(new HTTPError(400, 'Bad request or attribute not found'))
     return
   }
@@ -45,8 +46,19 @@ const validateHistogram = (req, res, next) => {
   next()
 }
 
-const isMeshTerm = (attr) => {
-  return attr.every(a => !_.isEmpty(a) && meshTerms.hasOwnProperty(a.name))
+const isCorrectAttribute = (attr, algorithm) => {
+  switch (algorithm) {
+    case '1d_categorical_histogram':
+    case '2d_categorical_histogram':
+      return attr.every(a => !_.isEmpty(a) && meshTerms.hasOwnProperty(a.name))
+    case '1d_numerical_histogram':
+    case '2d_numerical_histogram':
+      return attr.every(a => !_.isEmpty(a) && meshAttributes.find(m => a.name === m.mesh))
+    case '2d_mixed_histogram':
+      return attr.every(a => !_.isEmpty(a) && (meshTerms.hasOwnProperty(a.name) || meshAttributes.find(m => a.name === m.mesh)))
+    default:
+      return false
+  }
 }
 
 const isAttribute = (attr) => { // eslint-disable-line no-unused-vars
