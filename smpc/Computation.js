@@ -101,7 +101,7 @@ class Computation {
         console.log(`Disconnected from player ${index} with code ${code}`)
         this.players[ws._index].socket = null
 
-        if (this.state.step !== step.COMPUTATION_END) {
+        if (this.state.step < step.COMPUTATION_END) {
           this.restart()
           this.reject(new Error(`Player ${index} closed before the end of the computation. Reason: ${reason}`))
         }
@@ -134,7 +134,7 @@ class Computation {
       ws.on('close', (code, reason) => {
         console.log(`Disconnected from client ${index} with code ${code}`)
         this.clients[ws._index].socket = null
-        if (this.state.step !== step.IMPORT_END) {
+        if (this.state.step < step.IMPORT_END) {
           this.restart()
           this.reject(new Error(`Client ${index} closed before the end of the importation. Reason: ${reason}`))
         }
