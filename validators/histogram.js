@@ -39,7 +39,7 @@ const validateHistogram = (req, res, next) => {
   }
 
   if (!isProperAlgorithm(req.body.algorithm, req.body.attributes)) {
-    next(new HTTPError(400, 'Unsupported algorithm'))
+    next(new HTTPError(400, 'Unsupported algorithm or wrong number of attributes for the selected algorithm'))
     return
   }
 
