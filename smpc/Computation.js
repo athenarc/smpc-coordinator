@@ -299,7 +299,7 @@ class Computation {
   cleanUp (entities) {
     for (const e of entities) {
       if (e.socket) {
-        e.socket.terminate()
+        e.socket.close(1000)
       }
     }
   }
