@@ -205,6 +205,10 @@ class Computation {
     this.processDataInfo(data.datasetInfo)
 
     if (this.state.dataInfoReceived === this.clients.length) {
+      if (this.state.dataInfo.dataSize === 0) {
+        return this.handleComputationFinished({ data })
+      }
+
       this.updateStep(step.DATA_SIZE_ACCEPTED)
       this.state.dataInfoReceived = 0
       this.sendToAll(pack({ message: 'compile', job: this.job.data, dataInfo: this.state.dataInfo }), this.players)
@@ -233,7 +237,13 @@ class Computation {
   }
 
   processResults () {
+
     let results = []
+
+    if (this.state.dataInfo.dataSize === 0) {
+      return []
+    }
+
     for (let r of this.state.results.split('\n')) {
       if (r.includes('#') || r.includes('START')) {
         continue
