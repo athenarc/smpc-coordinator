@@ -1,6 +1,7 @@
 const Computation = require('./Computation')
 const attributes = require('../smpc-global/attributes.json')
 const mapping = require('../smpc-global/mapping.json')
+const meshTerms = require('../smpc-global/meshTerms.json')
 
 class HistogramComputation extends Computation {
   constructor (job) {
@@ -85,8 +86,16 @@ class HistogramComputation extends Computation {
     return arr
   }
 
-  getAttributeNames (name) {
-    return Object.keys(mapping[name])
+  getAttributeNames (mesh) {
+    // Take the values of the childer of the attribute
+    // Sort children by mapping number
+    // Get only mesh term
+    // Get mesh's term name
+    return Object
+      .entries(mapping[mesh])
+      .sort((a, b) => a[1] - b[1])
+      .map(t => t[0])
+      .map(m => meshTerms[m].name)
   }
 
   computeAxisLabels (min, max, width, cells) {
@@ -110,7 +119,6 @@ class HistogramComputation extends Computation {
       results = data.reduce((previous, current) => {
         const xy = current.replace(/\s/g, '').split(',')
         previous.y.push(Number(xy[1]))
-
         return previous
       }, { x: this.getAttributeNames(this.job.data.attributes[0].name), y: [] })
     }

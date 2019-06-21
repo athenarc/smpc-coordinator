@@ -1,3 +1,5 @@
+const { status } = require('../config/constants')
+
 const computations = [
   {
     key: 'ef6b9799-b51d-4b32-ad31-101cb766f47c',
@@ -8,7 +10,7 @@ const computations = [
       id: 'ef6b9799-b51d-4b32-ad31-101cb766f47c',
       timestamps:
       {accepted: 1557102417136, done: 1557103955216},
-      status: 'completed',
+      status: status.COMPLETED,
       results: {
         x: ['white', 'bangladeshi', 'pakistani', 'black', 'indian', 'other', 'other asian', 'chinese'],
         y: [1252, 385, 201, 346, 201, 431, 184, 0]
@@ -41,7 +43,7 @@ const computations = [
         accepted: 1556965833368,
         done: 1556969634972
       },
-      status: 'completed',
+      status: status.COMPLETED,
       results: {
         min: 18,
         max: 85,
@@ -76,7 +78,7 @@ const computations = [
         accepted: 1556997732193,
         done: 1557003282304
       },
-      status: 'completed',
+      status: status.COMPLETED,
       results: {
         z: [
           [
@@ -141,7 +143,7 @@ const computations = [
         done: 1555367233972
       },
       id: '1dbb7a04-9e80-45c7-990b-77ef9ac5f940',
-      status: 'completed',
+      status: status.COMPLETED,
       results: {
         min: [
           139.478,
@@ -224,7 +226,7 @@ const computations = [
         accepted: 1555877466313,
         done: 1555882323852
       },
-      status: 'completed',
+      status: status.COMPLETED,
       results: {
         min: 18,
         max: 85,

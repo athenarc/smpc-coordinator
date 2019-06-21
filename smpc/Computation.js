@@ -98,12 +98,12 @@ class Computation {
       })
 
       ws.on('close', (code, reason) => {
-        console.log(`Disconnected from player ${index}.`)
+        console.log(`Disconnected from player ${index} with code ${code}`)
         this.players[ws._index].socket = null
 
-        if (this.state.step !== step.COMPUTATION_END) {
+        if (this.state.step < step.COMPUTATION_END) {
           this.restart()
-          this.reject(new Error(`Unexpected close with code: ${code} and reason: ${reason}`))
+          this.reject(new Error(`Player ${index} closed before the end of the computation. Reason: ${reason}`))
         }
       })
 
@@ -132,11 +132,11 @@ class Computation {
       })
 
       ws.on('close', (code, reason) => {
-        console.log(`Disconnected from client ${index}.`)
+        console.log(`Disconnected from client ${index} with code ${code}`)
         this.clients[ws._index].socket = null
-        if (this.state.step !== step.IMPORT_END) {
+        if (this.state.step < step.IMPORT_END) {
           this.restart()
-          this.reject(new Error(`Unexpected close with code: ${code} and reason: ${reason}`))
+          this.reject(new Error(`Client ${index} closed before the end of the importation. Reason: ${reason}`))
         }
       })
 
@@ -186,7 +186,6 @@ class Computation {
         if (data.id === '0') {
           this.state.results = data.output
         }
-
         if (this.state.exit === this.players.length) {
           this.emitter.emit('computation-finished', { data })
         }
@@ -206,6 +205,10 @@ class Computation {
     this.processDataInfo(data.datasetInfo)
 
     if (this.state.dataInfoReceived === this.clients.length) {
+      if (this.state.dataInfo.dataSize === 0) {
+        return this.handleComputationFinished({ data })
+      }
+
       this.updateStep(step.DATA_SIZE_ACCEPTED)
       this.state.dataInfoReceived = 0
       this.sendToAll(pack({ message: 'compile', job: this.job.data, dataInfo: this.state.dataInfo }), this.players)
@@ -234,7 +237,13 @@ class Computation {
   }
 
   processResults () {
+
     let results = []
+
+    if (this.state.dataInfo.dataSize === 0) {
+      return []
+    }
+
     for (let r of this.state.results.split('\n')) {
       if (r.includes('#') || r.includes('START')) {
         continue
@@ -300,7 +309,7 @@ class Computation {
   cleanUp (entities) {
     for (const e of entities) {
       if (e.socket) {
-        e.socket.terminate()
+        e.socket.close(1000)
       }
     }
   }

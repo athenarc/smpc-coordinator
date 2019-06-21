@@ -7,7 +7,7 @@ const ErrorHandler = (err, req, res, next) => {
 
   return res.status(500).send(
     {
-      error: { code: 500, message: err.message }
+      error: { code: 500, msg: err.message }
     }
   )
 }
