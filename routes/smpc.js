@@ -38,8 +38,8 @@ router.get('/queue/:id', async (req, res, next) => {
 
     if (value.status !== status.COMPLETED) {
       return res.status(200).json({
-        status: status.properties[value.status].msg,
-        id: req.params.id
+        ...value,
+        status: status.properties[value.status].msg
       })
     }
 
