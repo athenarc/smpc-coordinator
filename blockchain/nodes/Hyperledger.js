@@ -92,7 +92,7 @@ class Hyperledger extends Node {
   }
 
   registerResponse (event, block, txnid, status) {
-    console.log(`registerResponse: Event happened, transaction ID : ${txnid} Status: ${status}`)
+    this.printInfo(event.event_name, txnid, status)
     let eventPayload = event.payload.toString()
 
     let eventPayloadObject = JSON.parse(event.payload.toString())
@@ -112,31 +112,34 @@ class Hyperledger extends Node {
   }
 
   handleError (err) {
-    console.log('There is a problem with the event hub : ' + err)
+    console.log(`There is a problem with the event hub : ${err}`)
     throw new Error(err)
   }
 
+  printInfo (eventName, txnid, status) {
+    logger.info(`${eventName}: Event happened, transaction ID : ${txnid} Status: ${status}`)
+  }
+
   createStudy (event, block, txnid, status) {
-    console.log(`createStudy : Event happened, transaction ID : ${txnid} Status: ${status}`)
+    this.printInfo(event.event_name, txnid, status)
     let eventPayload = event.payload.toString()
     console.log(`Payload : ${eventPayload}`)
   }
 
   updateStudy (event, block, txnid, status) {
-    console.log(`updateStudy : Event happened, transaction ID : ${txnid} Status: ${status}`)
+    this.printInfo(event.event_name, txnid, status)
     let eventPayload = event.payload.toString()
     console.log(`Payload : ${eventPayload}`)
   }
 
   updateStudyResponse (event, block, txnid, status) {
-    console.log(`updateStudyResponse : Event happened, transaction ID : ${txnid} Status: ${status}`)
-    console.log('Event happened, transaction ID :' + txnid + ' Status:' + status)
+    this.printInfo(event.event_name, txnid, status)
     let eventPayload = event.payload.toString()
     console.log(`Payload : ${eventPayload}`)
   }
 
   registerData (event, block, txnid, status) {
-    console.log(`registerData : Event happened, transaction ID : ${txnid} Status: ${status}`)
+    this.printInfo(event.event_name, txnid, status)
     let eventPayload = event.payload.toString()
     console.log(`Payload : ${eventPayload}`)
   }
