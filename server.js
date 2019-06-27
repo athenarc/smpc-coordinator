@@ -52,10 +52,14 @@ app.queue = queue
   app.use(ErrorHandler)
 
   if (process.env.BLOCKCHAIN === '1') {
-    await node.connect()
-    await node.register()
+    try {
+      await node.connect()
+      await node.register()
 
-    app.node = node
+      app.node = node
+    } catch (e) {
+      logger.warn(`Blockchain initialization error: ${e.message}`)
+    }
   }
 
   const server = app.listen(LISTEN_PORT, () => {
