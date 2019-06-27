@@ -91,7 +91,7 @@ class Hyperledger extends Node {
     await this._registerEvents()
   }
 
-  registerResponse (event, block, txnid, status) {
+  async registerResponse (event, block, txnid, status) {
     this.printInfo(event.event_name, txnid, status)
     let eventPayload = event.payload.toString()
 
@@ -99,16 +99,8 @@ class Hyperledger extends Node {
 
     console.log(`Payload : ${eventPayload}`)
 
-    let params = [eventPayloadObject.studyid]
-    const request = {
-      chaincodeId: HYPERLEDGER_CHAINCODE_ID,
-      fcn: 'query',
-      args: params
-    }
-
-    query.cc_query(request, HYPERLEDGER_CHANNEL).then((result) => {
-      console.log('Query result :' + result)
-    })
+    const res = await this.query([eventPayloadObject.studyid])
+    console.log('Query result :' + res)
   }
 
   handleError (err) {
@@ -118,6 +110,17 @@ class Hyperledger extends Node {
 
   printInfo (eventName, txnid, status) {
     logger.info(`${eventName}: Event happened, transaction ID : ${txnid} Status: ${status}`)
+  }
+
+  async query (params) {
+    const request = {
+      chaincodeId: HYPERLEDGER_CHAINCODE_ID,
+      fcn: 'query',
+      args: params
+    }
+
+    const res = await query.cc_query(request, this.channel)
+    return res
   }
 
   createStudy (event, block, txnid, status) {
@@ -141,7 +144,7 @@ class Hyperledger extends Node {
   registerData (event, block, txnid, status) {
     this.printInfo(event.event_name, txnid, status)
     let eventPayload = event.payload.toString()
-    console.log(`Payload : ${eventPayload}`)
+    // console.log(`Payload : ${eventPayload}`)
   }
 }
 
