@@ -51,10 +51,12 @@ app.queue = queue
   app.use(HTTPErrorHandler)
   app.use(ErrorHandler)
 
-  await node.connect()
-  await node.register()
+  if (process.env.BLOCKCHAIN === '1') {
+    await node.connect()
+    await node.register()
 
-  app.node = node
+    app.node = node
+  }
 
   const server = app.listen(LISTEN_PORT, () => {
     logger.info('SMPC Coordinator running on port %d', LISTEN_PORT)
