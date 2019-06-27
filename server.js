@@ -1,20 +1,11 @@
 require('dotenv').config()
-const _ = require('lodash')
+const { validateConfiguration } = require('./config/validate')
 
 const LISTEN_PORT = process.env.PORT || 3000
 const ENV = process.env.NODE_ENV || 'development'
 
-if (_.isEmpty(process.env.ROOT_CA)) {
-  throw new Error('HTTPS root CA path must be defined!')
-}
-
-if (_.isEmpty(process.env.KEY)) {
-  throw new Error('HTTPS key path must be defined!')
-}
-
-if (_.isEmpty(process.env.CERT)) {
-  throw new Error('HTTPS cert path must be defined!')
-}
+// Throws ConfigurationError
+validateConfiguration()
 
 const express = require('express')
 const bodyParser = require('body-parser')
