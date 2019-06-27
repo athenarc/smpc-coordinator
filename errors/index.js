@@ -7,7 +7,15 @@ const httpCodeToName = (code) => {
   return `${STATUS_CODES[code].replace(/\s|error/igm, '')}${suffix}`
 }
 
-class HTTPError extends Error {
+class AppError extends Error {
+  constructor (message) {
+    super(message)
+    this.name = this.constructor.name
+    Error.captureStackTrace(this, this.constructor)
+  }
+}
+
+class HTTPError extends AppError {
   constructor (code, message) {
     super(message || STATUS_CODES[code])
     this.name = httpCodeToName(code)
@@ -15,6 +23,31 @@ class HTTPError extends Error {
   }
 }
 
+class ConfigurationError extends AppError {
+  constructor (configuration) {
+    super(`Configuration: ${configuration} must be defined!`)
+    this.data = { configuration }
+  }
+}
+
+class BlockchainError extends AppError {
+  constructor (message) {
+    super(`Blockchain Error: ${message}`)
+    this.data = { message }
+  }
+}
+
+class InternalError extends AppError {
+  constructor (error) {
+    super(error.message)
+    this.data = { error }
+  }
+}
+
 module.exports = {
-  HTTPError
+  AppError,
+  HTTPError,
+  ConfigurationError,
+  BlockchainError,
+  InternalError
 }
