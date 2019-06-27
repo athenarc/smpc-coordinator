@@ -77,7 +77,7 @@ queue.on('failed', async (job, err) => {
 })
 
 queue.on('stalled', async (jobId) => {
-  logger.warning(`Job ${jobId} stalled and will be reprocessed`)
+  logger.warn(`Job ${jobId} stalled and will be reprocessed`)
 })
 
 module.exports = {
