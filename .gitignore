@@ -123,3 +123,4 @@ smpc-user-db
 
 certs
 .env.*
+key_store
