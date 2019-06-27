@@ -104,8 +104,8 @@ class Hyperledger extends Node {
   }
 
   handleError (err) {
-    console.log(`There is a problem with the event hub : ${err}`)
-    throw new Error(err)
+    logger.debug(err)
+    throw new BlockchainError(`There is a problem with the event hub : ${err.message}`)
   }
 
   printInfo (eventName, txnid, status) {
