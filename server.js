@@ -65,6 +65,6 @@ app.queue = queue
   setupWss(server, sessionMiddleware)
 })()
   .catch(err => {
-    logger.error(err)
+    logger.error(err.message)
     process.exit(1)
   })
