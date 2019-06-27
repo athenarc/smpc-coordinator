@@ -33,11 +33,20 @@ class Hyperledger extends Node {
     )
 
     this.channel.addPeer(this.peer)
+
     this.updateStudy = this.updateStudy.bind(this)
     this.updateStudyResponse = this.updateStudyResponse.bind(this)
     this.registerData = this.registerData.bind(this)
     this.registerResponse = this.registerResponse.bind(this)
     this.handleError = this.handleError.bind(this)
+
+    this.events = [
+      { name: 'createStudy', onEvent: this.createStudy, onError: this.handleError },
+      { name: 'updateStudy', onEvent: this.updateStudy, onError: this.handleError },
+      { name: 'updateStudyResponse', onEvent: this.updateStudyResponse, onError: this.handleError },
+      { name: 'registerData', onEvent: this.registerData, onError: this.handleError },
+      { name: 'registerResponse', onEvent: this.registerResponse, onError: this.handleError }
+    ]
   }
 
   async connect () {
@@ -62,11 +71,11 @@ class Hyperledger extends Node {
   _registerEvents () {
     return new Promise((resolve, reject) => {
       this.eventHub = this.channel.newChannelEventHub(this.peer)
-      this.eventHub.registerChaincodeEvent(HYPERLEDGER_CHAINCODE_ID, 'createStudy', this.createStudy, this.handleError)
-      this.eventHub.registerChaincodeEvent(HYPERLEDGER_CHAINCODE_ID, 'updateStudy', this.updateStudy, this.handleError)
-      this.eventHub.registerChaincodeEvent(HYPERLEDGER_CHAINCODE_ID, 'updateStudyResponse', this.updateStudyResponse, this.handleError)
-      this.eventHub.registerChaincodeEvent(HYPERLEDGER_CHAINCODE_ID, 'registerData', this.registerData, this.handleError)
-      this.eventHub.registerChaincodeEvent(HYPERLEDGER_CHAINCODE_ID, 'registerResponse', this.registerResponse, this.handleError)
+
+      for (let event of this.events) {
+        this.eventHub.registerChaincodeEvent(HYPERLEDGER_CHAINCODE_ID, event.name, event.onEvent, event.onError)
+      }
+
       this.eventHub.connect({ full_block: true }, (err, status) => {
         if (err) {
           reject(err)
