@@ -73,13 +73,11 @@ class Computation {
   _eventMiddleware (event, msg, next) {
     if (msg.data) {
       if (msg.data.errors && msg.data.errors.length > 0) {
-        this.handleError(msg)
-        return
+        return this.handleError(msg)
       }
 
       if (msg.data.code && msg.data.code !== 0) {
-        this.handleError(msg)
-        return
+        return this.handleError(msg)
       }
     }
 
