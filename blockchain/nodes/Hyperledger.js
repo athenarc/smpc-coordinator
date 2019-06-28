@@ -34,6 +34,7 @@ class Hyperledger extends Node {
 
     this.channel.addPeer(this.peer)
 
+    this.createStudy = this.createStudy.bind(this)
     this.updateStudy = this.updateStudy.bind(this)
     this.updateStudyResponse = this.updateStudyResponse.bind(this)
     this.registerData = this.registerData.bind(this)
@@ -125,7 +126,8 @@ class Hyperledger extends Node {
 
   createStudy (event, block, txnid, status) {
     this.printInfo(event.event_name, txnid, status)
-    let eventPayload = event.payload.toString()
+    let eventPayload = JSON.parse(event.payload.toString())
+    console.log(eventPayload)
     console.log(`Payload : ${eventPayload}`)
   }
 
