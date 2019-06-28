@@ -33,7 +33,10 @@ class Computation {
       key: KEY,
       cert: CERT,
       rejectUnauthorized: true,
-      requestCert: true
+      requestCert: true,
+      checkServerIdentity: (host, cert) => {
+        return undefined
+      }
     }
 
     this.resolve = null
