@@ -92,18 +92,6 @@ class Hyperledger extends Node {
     await this._registerEvents()
   }
 
-  async registerResponse (event, block, txnid, status) {
-    this.printInfo(event.event_name, txnid, status)
-    let eventPayload = event.payload.toString()
-
-    let eventPayloadObject = JSON.parse(event.payload.toString())
-
-    console.log(`Payload : ${eventPayload}`)
-
-    const res = await this.query([eventPayloadObject.studyid])
-    console.log('Query result :' + res)
-  }
-
   handleError (err) {
     logger.debug(err)
     throw new BlockchainError(`There is a problem with the event hub : ${err.message}`)
@@ -124,11 +112,22 @@ class Hyperledger extends Node {
     return res
   }
 
-  createStudy (event, block, txnid, status) {
+  async createStudy (event, block, txnid, status) {
     this.printInfo(event.event_name, txnid, status)
     let eventPayload = JSON.parse(event.payload.toString())
-    console.log(eventPayload)
-    console.log(`Payload : ${eventPayload}`)
+    let properties = JSON.parse(eventPayload.purp)
+
+    let res = await this.query([eventPayload.studyid])
+    res = await this.query([`Resp_${eventPayload.studyid}_1`])
+
+    if (properties && properties.smpc) {
+      try {
+        let request = JSON.parse(eventPayload.studydef)
+        await this.requestComputation(request)
+      } catch (e) {
+        logger.error('Blockchain computation request error: ', e)
+      }
+    }
   }
 
   updateStudy (event, block, txnid, status) {
@@ -143,10 +142,30 @@ class Hyperledger extends Node {
     console.log(`Payload : ${eventPayload}`)
   }
 
-  registerData (event, block, txnid, status) {
+  async registerData (event, block, txnid, status) {
     this.printInfo(event.event_name, txnid, status)
     let eventPayload = event.payload.toString()
+    let eventPayloadObject = JSON.parse(event.payload.toString())
+
+    console.log(`Payload : ${eventPayload}`)
+
+    const res = await this.query([eventPayloadObject.studyid])
+    console.log('Query result :' + res)
     // console.log(`Payload : ${eventPayload}`)
+  }
+
+  async registerResponse (event, block, txnid, status) {
+    this.printInfo(event.event_name, txnid, status)
+    let eventPayload = event.payload.toString()
+
+    let eventPayloadObject = JSON.parse(event.payload.toString())
+
+    console.log(`Payload : ${eventPayload}`)
+
+    let res = await this.query([eventPayloadObject.studyid])
+    console.log('Query result :' + res)
+    res = await this.query(['Snx55wlzy2yklttcqch0kd23zkhyv2pc'])
+    console.log('Query result :' + res)
   }
 }
 
