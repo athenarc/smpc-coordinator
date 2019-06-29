@@ -1,6 +1,7 @@
 const express = require('express')
 
 const { db, addJobToDB } = require('../db')
+const { constructJob } = require('../helpers')
 const { status } = require('../config/constants')
 const { HTTPError } = require('../errors')
 const { addJobToQueue } = require('../queue')
@@ -11,10 +12,9 @@ let router = express.Router()
 
 const createSimpleSMPCRouter = (router, path, middlewares) => {
   router.post(path, middlewares, async (req, res, next) => {
-    const job = { ...req.body, timestamps: { accepted: Date.now() } }
+    const job = constructJob(req.body)
 
     try {
-      job.status = status.PENDING
       const location = `/api/smpc/queue/${job.id}`
       res.set('Location', location)
       res.status(202).json({ location, ...job, status: status.properties[status.PENDING].msg })

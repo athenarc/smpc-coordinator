@@ -2,6 +2,7 @@ const _ = require('lodash')
 const crypto = require('crypto')
 
 const { appEmitter } = require('./emitters.js')
+const { status } = require('./config/constants')
 const totalAttributes = require('./smpc-global/attributes.json')
 const algorithms = require('./smpc-global/algorithms.json')
 
@@ -36,10 +37,15 @@ const updateJobStatus = (job, status) => {
   appEmitter.emit('update-computation', { ...job.data })
 }
 
+const constructJob = request => {
+  return { ...request, timestamps: { accepted: Date.now() }, status: status.PENDING }
+}
+
 module.exports = {
   getHistogramType,
   pack,
   unpack,
   sha256,
-  updateJobStatus
+  updateJobStatus,
+  constructJob
 }
