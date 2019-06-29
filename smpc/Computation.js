@@ -1,3 +1,4 @@
+const _ = require('lodash')
 const WebSocket = require('ws')
 const EventEmitter = require('events')
 
@@ -11,7 +12,11 @@ class Computation {
     this.emitter = new EventEmitter()
 
     this.players = players.map(p => ({ ...p, socket: null }))
-    this.clients = clients.map(c => ({ ...c, socket: null }))
+    this.clients = clients
+      .filter(c => _.includes(this.job.data.dataProviders, c.id))
+      .map(c => ({ ...c, socket: null }))
+
+    this.job.data.totalClients = this.clients.length
 
     this.state = {
       dataInfoReceived: 0,
@@ -38,6 +43,7 @@ class Computation {
 
   _execute (resolve, reject) {
     logger.info('Initiating SMPC Engine...')
+    logger.info(`Total Clients: ${this.job.data.totalClients}`)
     this.job.reportProgress(0) // Next release will inlude the feature to pass arbitrary data in reportProgress
     // this.job.reportProgress({ step: this.state.step }) // Next release will inlude the feature to pass arbitrary data in reportProgress
     this.resolve = resolve
@@ -77,7 +83,7 @@ class Computation {
 
       ws.on('open', () => {
         ws.send(pack({ message: 'job-info', job: this.job.data }))
-        logger.info(`Connected to player ${index}.`)
+        logger.info(`Connected to player ${p.id}.`)
       })
 
       ws.on('close', (code, reason) => {
@@ -86,7 +92,7 @@ class Computation {
 
         if (this.state.step < step.COMPUTATION_END) {
           this.restart()
-          this.reject(new Error(`Player ${index} closed before the end of the computation. Reason: ${reason}`))
+          this.reject(new Error(`Player ${p.id} closed before the end of the computation. Reason: ${reason}`))
         }
       })
 
@@ -109,7 +115,7 @@ class Computation {
       const ws = this.clients[index].socket
 
       ws.on('open', () => {
-        logger.info(`Connected to client ${index}.`)
+        logger.info(`Connected to client ${c.id}.`)
         ws.send(pack({ message: 'job-info', job: this.job.data }))
         ws.send(pack({ message: 'data-info', job: this.job.data }))
       })
@@ -119,7 +125,7 @@ class Computation {
         this.clients[ws._index].socket = null
         if (this.state.step < step.IMPORT_END) {
           this.restart()
-          this.reject(new Error(`Client ${index} closed before the end of the importation. Reason: ${reason}`))
+          this.reject(new Error(`Client ${c.id} closed before the end of the importation. Reason: ${reason}`))
         }
       })
 
