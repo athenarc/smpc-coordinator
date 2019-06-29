@@ -63,16 +63,16 @@ queue.on('ready', () => {
 })
 
 queue.on('error', (err) => {
-  logger.error(`A queue error happened: ${err.message}`)
+  logger.error(`A queue error happened: ${err.message}: `, err)
 })
 
 queue.on('retrying', async (job, err) => {
-  logger.error(`Job ${job.id} failed with error ${err.message} but is being retried!`)
+  logger.error(`Job ${job.id} failed with error ${err.message} but is being retried!: `, err)
   updateJobStatus(job, status.PENDING)
 })
 
 queue.on('failed', async (job, err) => {
-  logger.error(`Job ${job.id} failed with error ${err.message}`)
+  logger.error(`Job ${job.id} failed with error ${err.message}: `, err)
   updateJobStatus(job, status.FAILED)
 })
 

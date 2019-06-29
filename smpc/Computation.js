@@ -107,7 +107,7 @@ class Computation {
       })
 
       ws.on('error', (err) => {
-        logger.error(err)
+        logger.error('Player websocket error: ', err)
         this.handleError(err)
       })
 
@@ -145,6 +145,7 @@ class Computation {
       })
 
       ws.on('error', (err) => {
+        logger.error('Client websocket error: ', err)
         this.handleError(err)
       })
     }

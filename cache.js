@@ -10,7 +10,7 @@ const setExAsync = promisify(client.setex).bind(client)
 const EXPIRATION = 60 * 60 * 24 * 30 // 30 day in seconds
 
 client.on('error', (err) => {
-  logger.error(`Cache: Redis Error ${err}`)
+  logger.error('Cache: Redis Error: ', err)
 })
 
 const getFromCache = async (key) => {

@@ -21,6 +21,7 @@ const options = {
 
 const logger = createLogger({
   format: format.combine(
+    format.errors({ stack: true }),
     format.splat(),
     format.timestamp(),
     format.simple()

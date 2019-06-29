@@ -25,7 +25,7 @@ const cache = async (req, res, next) => {
       next()
     }
   } catch (e) {
-    logger.error(`Cache error: ${e}`)
+    logger.error('Cache error: ', e)
   }
 
   next()
