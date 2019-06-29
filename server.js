@@ -1,11 +1,4 @@
-require('dotenv').config()
-const { validateConfiguration } = require('./config/validate')
-
-const LISTEN_PORT = process.env.PORT || 3000
-const ENV = process.env.NODE_ENV || 'development'
-
-// Throws ConfigurationError
-validateConfiguration()
+const { ENV, LISTEN_PORT } = require('./config')
 
 const express = require('express')
 const bodyParser = require('body-parser')

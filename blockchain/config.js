@@ -1,5 +1,4 @@
 const fs = require('fs')
-const path = require('path')
 
 const HYPERLEDGER_CHANNEL = process.env.HYPERLEDGER_CHANNEL
 const HYPERLEDGER_CHAINCODE_ID = process.env.HYPERLEDGER_CHAINCODE_ID

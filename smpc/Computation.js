@@ -1,15 +1,8 @@
 const WebSocket = require('ws')
 const EventEmitter = require('events')
 
-const PLAYER_1 = process.env.PLAYER_1 || 'wss://localhost:3005'
-const PLAYER_2 = process.env.PLAYER_2 || 'wss://localhost:3006'
-const PLAYER_3 = process.env.PLAYER_3 || 'wss://localhost:3007'
-const CLIENT_1 = process.env.CLIENT_1 || 'wss://localhost:3008'
-const CLIENT_2 = process.env.CLIENT_2 || 'wss://localhost:3009'
-const CLIENT_3 = process.env.CLIENT_3 || 'wss://localhost:3010'
-
 const { pack, unpack } = require('../helpers')
-const { step, ROOT_CA, KEY, CERT } = require('../config/constants')
+const { step, players, clients, ROOT_CA, KEY, CERT } = require('../config')
 const logger = require('../config/winston')
 
 class Computation {
@@ -17,17 +10,8 @@ class Computation {
     this.job = job
     this.emitter = new EventEmitter()
 
-    this.players = [
-      { address: PLAYER_1, socket: null },
-      { address: PLAYER_2, socket: null },
-      { address: PLAYER_3, socket: null }
-    ]
-
-    this.clients = [
-      { address: CLIENT_1, socket: null },
-      { address: CLIENT_2, socket: null },
-      { address: CLIENT_3, socket: null }
-    ]
+    this.players = players.map(p => ({ ...p, socket: null }))
+    this.clients = clients.map(c => ({ ...c, socket: null }))
 
     this.state = {
       dataInfoReceived: 0,
