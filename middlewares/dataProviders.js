@@ -21,7 +21,7 @@ const processDataProviders = (req, res, next) => {
 }
 
 const isDataProvider = providers => {
-  return providers.every(p => _.isInteger(p) && p < clients.length)
+  return providers.every(p => _.isInteger(p) && clients.some(c => c.id === p))
 }
 
 module.exports = processDataProviders
