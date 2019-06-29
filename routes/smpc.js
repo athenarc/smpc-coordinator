@@ -4,10 +4,8 @@ const { db, addJobToDB } = require('../db')
 const { status } = require('../config/constants')
 const { HTTPError } = require('../errors')
 const { addJobToQueue } = require('../queue')
-const processAttributes = require('../middlewares/attributes')
 const validateHistogram = require('../validators/histogram')
-const preprocess = require('../middlewares/preprocess')
-const cache = require('../middlewares/cache')
+const { processAttributes, processDataProviders, preprocess, cache } = require('../middlewares')
 
 let router = express.Router()
 
@@ -75,6 +73,10 @@ router.get('/results/:id', async (req, res, next) => {
   res.status(200).json()
 })
 
-router = createSimpleSMPCRouter(router, '/histogram', [processAttributes, validateHistogram, preprocess, cache])
+router = createSimpleSMPCRouter(
+  router,
+  '/histogram',
+  [processAttributes, processDataProviders, validateHistogram, preprocess, cache]
+)
 
 module.exports = router
