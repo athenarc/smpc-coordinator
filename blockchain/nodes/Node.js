@@ -24,7 +24,7 @@ class Node {
     const { req } = this.runMiddlewares(middlewares, request)
     const job = constructJob(req.body)
     await addJobToDB({ ...job })
-    addJobToQueue({ ...job })
+    await addJobToQueue({ ...job })
   }
 
   runMiddlewares (middlewares, job) {

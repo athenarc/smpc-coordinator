@@ -18,21 +18,24 @@ const redis = {
 const queue = new Queue('smpc', { delayedDebounce: 3000, redis })
 
 const addJobToQueue = (jobDescription) => {
-  const job = queue.createJob({ ...jobDescription })
-  job.setId(jobDescription.id)
-  job.backoff('fixed', 1000)
+  return new Promise((resolve, reject) => {
+    const job = queue.createJob({ ...jobDescription })
+    job.setId(jobDescription.id)
+    job.backoff('fixed', 1000)
 
-  // Consider changing to promise
-  job.save((err, job) => {
-    if (err) {
-      throw new HTTPError(500, `Unable to save job ${job.id} on queue`)
-    }
-  })
+    job.on('succeeded', (result) => onSucceeded(job, result))
+    job.on('progress', (progress) => {
+      logger.info(`Job ${job.id} reported progress ${progress}`) // Next release will inlude the feature to pass arbitrary data in reportProgress
+      // logger.info(`Job ${job.id} reported progress: page ${step.properties[progress.step].msg}`) // Next release will inlude the feature to pass arbitrary data in reportProgress
+    })
 
-  job.on('succeeded', (result) => onSucceeded(job, result))
-  job.on('progress', (progress) => {
-    logger.info(`Job ${job.id} reported progress ${progress}`) // Next release will inlude the feature to pass arbitrary data in reportProgress
-    // logger.info(`Job ${job.id} reported progress: page ${step.properties[progress.step].msg}`) // Next release will inlude the feature to pass arbitrary data in reportProgress
+    job.save((err, job) => {
+      if (err) {
+        reject(new HTTPError(500, `Unable to save job ${job.id} on queue`))
+      }
+
+      resolve(job)
+    })
   })
 }
 

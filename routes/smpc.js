@@ -20,7 +20,7 @@ const createSimpleSMPCRouter = (router, path, middlewares) => {
       res.status(202).json({ location, ...job, status: status.properties[status.PENDING].msg })
 
       await addJobToDB({ ...job })
-      addJobToQueue({ ...job })
+      await addJobToQueue({ ...job })
     } catch (err) {
       job.status = status.FAILED
       next(err)
