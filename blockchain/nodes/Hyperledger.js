@@ -48,6 +48,8 @@ class Hyperledger extends Node {
       { name: 'registerData', onEvent: this.registerData, onError: this.handleError },
       { name: 'registerResponse', onEvent: this.registerResponse, onError: this.handleError }
     ]
+
+    this.studies = {}
   }
 
   async connect () {
@@ -114,16 +116,15 @@ class Hyperledger extends Node {
 
   async createStudy (event, block, txnid, status) {
     this.printInfo(event.event_name, txnid, status)
-    let eventPayload = JSON.parse(event.payload.toString())
-    let properties = JSON.parse(eventPayload.purp)
+    let payload = JSON.parse(event.payload.toString())
+    let properties = JSON.parse(payload.purp)
 
-    let res = await this.query([eventPayload.studyid])
-    res = await this.query([`Resp_${eventPayload.studyid}_1`])
+    logger.info(`Study creation request. Study ID: ${payload.studyid}`)
 
     if (properties && properties.smpc) {
       try {
-        let request = JSON.parse(eventPayload.studydef)
-        await this.requestComputation(request)
+        let request = JSON.parse(payload.studydef)
+        this.studies[payload.studyid] = { responses: 0, confirmationsNeeded: 1, clients: [], request }
       } catch (e) {
         logger.error('Blockchain computation request error: ', e)
       }
@@ -132,40 +133,51 @@ class Hyperledger extends Node {
 
   updateStudy (event, block, txnid, status) {
     this.printInfo(event.event_name, txnid, status)
-    let eventPayload = event.payload.toString()
-    console.log(`Payload : ${eventPayload}`)
+    let payload = JSON.parse(event.payload.toString())
+    console.log(`Payload : ${payload}`)
   }
 
   updateStudyResponse (event, block, txnid, status) {
     this.printInfo(event.event_name, txnid, status)
-    let eventPayload = event.payload.toString()
-    console.log(`Payload : ${eventPayload}`)
+    let payload = JSON.parse(event.payload.toString())
+    console.log(`Payload : ${payload}`)
   }
 
   async registerData (event, block, txnid, status) {
     this.printInfo(event.event_name, txnid, status)
-    let eventPayload = event.payload.toString()
-    let eventPayloadObject = JSON.parse(event.payload.toString())
+    let payload = JSON.parse(event.payload.toString())
 
-    console.log(`Payload : ${eventPayload}`)
+    console.log(`Payload : ${payload}`)
 
-    const res = await this.query([eventPayloadObject.studyid])
+    const res = await this.query([payload.studyid])
     console.log('Query result :' + res)
-    // console.log(`Payload : ${eventPayload}`)
   }
 
   async registerResponse (event, block, txnid, status) {
     this.printInfo(event.event_name, txnid, status)
-    let eventPayload = event.payload.toString()
+    let payload = JSON.parse(event.payload.toString())
+    logger.info(`Data registration response. Study ID: ${payload.studyid}`)
 
-    let eventPayloadObject = JSON.parse(event.payload.toString())
-
-    console.log(`Payload : ${eventPayload}`)
-
-    let res = await this.query([eventPayloadObject.studyid])
+    let res = await this.query([payload.studyid])
     console.log('Query result :' + res)
-    res = await this.query(['Snx55wlzy2yklttcqch0kd23zkhyv2pc'])
-    console.log('Query result :' + res)
+
+    res = JSON.parse(res)
+
+    if (res.status === '200') {
+      const study = payload.studyid.split('_')
+      this.updateConfirmation(study[1], study[2], res.response)
+    }
+  }
+
+  async updateConfirmation (studyID, id, res) {
+    if (this.studies.hasOwnProperty(studyID)) {
+      this.studies[studyID].responses += 1
+      this.studies[studyID].clients.push({ id, res })
+
+      if (this.studies[studyID].responses === this.studies[studyID].confirmationsNeeded) {
+        await this.requestComputation(this.studies[studyID].request)
+      }
+    }
   }
 }
 
