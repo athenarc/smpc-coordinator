@@ -100,7 +100,7 @@ class Hyperledger extends Node {
   }
 
   printInfo (eventName, txnid, status) {
-    logger.info(`${eventName}: Event happened, transaction ID : ${txnid} Status: ${status}`)
+    logger.info(`Event: ${eventName} transaction ID : ${txnid} Status: ${status}`)
   }
 
   async query (params) {
