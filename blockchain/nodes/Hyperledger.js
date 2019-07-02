@@ -1,3 +1,4 @@
+const _ = require('lodash')
 const FabricClient = require('fabric-client')
 
 const {
@@ -120,11 +121,14 @@ class Hyperledger extends Node {
     let properties = JSON.parse(payload.purp)
 
     logger.info(`Study creation request. Study ID: ${payload.studyid}`)
+    const res = await this.query([payload.studyid])
+    console.log('Query result :' + res)
 
     if (properties && properties.smpc) {
       try {
         let request = JSON.parse(payload.studydef)
-        this.studies[payload.studyid] = { responses: 0, confirmationsNeeded: 1, clients: [], request }
+        request = this.normalizeRequest(request)
+        this.studies[payload.studyid] = { responses: 0, confirmationsNeeded: 1, clients: [], request, raw_request: payload.studydef }
       } catch (e) {
         logger.error('Blockchain computation request error: ', e)
       }
@@ -134,12 +138,14 @@ class Hyperledger extends Node {
   updateStudy (event, block, txnid, status) {
     this.printInfo(event.event_name, txnid, status)
     let payload = JSON.parse(event.payload.toString())
+    console.log(payload)
     console.log(`Payload : ${payload}`)
   }
 
   updateStudyResponse (event, block, txnid, status) {
     this.printInfo(event.event_name, txnid, status)
     let payload = JSON.parse(event.payload.toString())
+    console.log(payload)
     console.log(`Payload : ${payload}`)
   }
 
