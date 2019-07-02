@@ -176,14 +176,22 @@ class Hyperledger extends Node {
   }
 
   async updateConfirmation (studyID, id, res) {
-    if (this.studies.hasOwnProperty(studyID)) {
-      this.studies[studyID].responses += 1
-      this.studies[studyID].clients.push({ id, res })
+    const link = JSON.parse(res.link)
 
-      if (this.studies[studyID].responses === this.studies[studyID].confirmationsNeeded) {
-        await this.requestComputation(this.studies[studyID].request)
-      }
+    if (!this.studies.hasOwnProperty(studyID) || !_.isArray(link)) {
+      return
     }
+
+    this.studies[studyID].responses += 1
+    this.studies[studyID].clients.push({ id, res })
+
+    this.studies[studyID].request.dataProviders = [0]
+    await this.requestComputation(
+      {
+        ...this.studies[studyID].request,
+        link: link[0],
+        raw_request: this.studies[studyID].raw_request
+      })
   }
 }
 
