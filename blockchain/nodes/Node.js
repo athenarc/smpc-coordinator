@@ -1,3 +1,6 @@
+const _ = require('lodash')
+const meshTermsInversed = require('../../smpc-global/meshTermsInversed.json')
+
 const { addJobToDB } = require('../../db')
 const { addJobToQueue } = require('../../queue')
 const validateHistogram = require('../../validators/histogram')
@@ -47,6 +50,25 @@ class Node {
     middlewares[index](req, res, next) // Run first middleware
 
     return { req, res }
+  }
+
+  normalizeRequest (request) {
+    if (_.isArray(request)) {
+      const keywords = new Set()
+      const req = {}
+
+      for (let record of request) {
+        if (record.keywords && _.isArray(record.keywords)) {
+          record.keywords.forEach(keywords.add, keywords)
+        }
+      }
+
+      req.attributes = Array.from(keywords).filter(k => meshTermsInversed.hasOwnProperty(k)).map(k => meshTermsInversed[k].id)
+      req.algorithm = req.attributes.length === 1 ? '1d_categorical_histogram' : '2d_categorical_histogram'
+      return req
+    }
+
+    return request
   }
 }
 
