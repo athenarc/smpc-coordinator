@@ -12,6 +12,7 @@ services:
       - ./key_store:/smpc-coordinator/key_store
       - smpc-db:/smpc-coordinator/smpc-db
       - smpc-cache:/smpc-coordinator/smpc-cache
+      - coordinator-logs:/smpc-coordinator/logs
     ports:
       - 3000:3000
     depends_on:
@@ -33,3 +34,4 @@ networks:
 volumes:
   smpc-db:
   smpc-cache:
+  coordinator-logs:
