@@ -9,6 +9,7 @@ services:
       - .env.production
     volumes:
       - ./certs:/smpc-coordinator/certs
+      - ./key_store:/smpc-coordinator/key_store
       - smpc-db:/smpc-coordinator/smpc-db
       - smpc-cache:/smpc-coordinator/smpc-cache
     ports:
