@@ -20,6 +20,10 @@ const setupWss = async (server, sessionMiddleware) => {
   const wss = new WebSocket.Server({
     server,
     verifyClient: ({ req }, done) => {
+      if (!req.session) {
+        done(true)
+      }
+
       return sessionMiddleware(req, {}, () => done(req.session.id))
     }
   })
