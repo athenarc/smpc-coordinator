@@ -88,6 +88,11 @@ class HistogramComputation extends Computation {
     return arr
   }
 
+  construct2DArrayFromFlattenArray (data, cellsX, cellsY) {
+    const y = Math.ceil(cellsY / cellsX)
+    return _.chunk(data, y).map(arr => arr.map(i => i.replace(/\s/g, '').split(',')[1]))
+  }
+
   getAttributeNames (mesh) {
     // Take the values of the childer of the attribute
     // Sort children by mapping number
@@ -135,7 +140,7 @@ class HistogramComputation extends Computation {
     }
 
     if (this.job.data.algorithm === '2d_categorical_histogram') {
-      data = this.construct2DArray(data, this.state.dataInfo.cellsX, this.state.dataInfo.cellsY)
+      data = this.construct2DArrayFromFlattenArray(data, this.state.dataInfo.cellsX, this.state.dataInfo.cellsY)
       results = { z: [...data], labels: { y: this.getAttributeNames(this.job.data.attributes[0].name), x: this.getAttributeNames(this.job.data.attributes[1].name) } }
     }
 
