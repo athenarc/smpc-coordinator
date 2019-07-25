@@ -21,7 +21,7 @@ const setupWss = async (server, sessionMiddleware) => {
     server,
     verifyClient: ({ req }, done) => {
       if (!req.session) {
-        done(true)
+        return done(true)
       }
 
       return sessionMiddleware(req, {}, () => done(req.session.id))
