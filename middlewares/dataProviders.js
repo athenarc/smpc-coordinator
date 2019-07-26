@@ -12,6 +12,10 @@ const processDataProviders = (req, res, next) => {
     return
   }
 
+  if (req.body.dataProviders.length === 0) {
+    req.body.dataProviders = _.range(clients.length)
+  }
+
   req.body.dataProviders = req.body.dataProviders.map(d => Number(d))
 
   if (!isDataProvider(req.body.dataProviders)) {
