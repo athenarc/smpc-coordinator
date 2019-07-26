@@ -12,6 +12,8 @@ const processDataProviders = (req, res, next) => {
     return
   }
 
+  req.body.dataProviders = req.body.dataProviders.map(d => Number(d))
+
   if (!isDataProvider(req.body.dataProviders)) {
     next(new HTTPError(400, 'dataProviders: Values should be an integer and not exceed the number of supported clients.'))
     return
