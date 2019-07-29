@@ -1,4 +1,7 @@
 const _ = require('lodash')
+const logger = require('../../config/winston')
+const { status } = require('../../config/constants')
+
 const meshTermsInversed = require('../../smpc-global/meshTermsInversed.json')
 
 const { addJobToDB } = require('../../db')
@@ -23,11 +26,20 @@ class Node {
   }
 
   async requestComputation (request) {
-    const middlewares = [processAttributes, processDataProviders, validateHistogram, preprocess, cache]
-    const { req } = this.runMiddlewares(middlewares, request)
-    const job = constructJob(req.body)
-    await addJobToDB({ ...job })
-    await addJobToQueue({ ...job })
+    try {
+      const middlewares = [processAttributes, processDataProviders, validateHistogram, preprocess, cache]
+      const { req } = this.runMiddlewares(middlewares, request)
+      const job = constructJob(req.body)
+      await addJobToDB({ ...job })
+      await addJobToQueue({ ...job })
+    } catch (e) {
+      logger.error(e)
+      const job = constructJob(request)
+      job.id = request.studyID
+      job.status = status.FAILED
+      job.error = { message: e.message }
+      await addJobToDB({ ...job })
+    }
   }
 
   runMiddlewares (middlewares, job) {
