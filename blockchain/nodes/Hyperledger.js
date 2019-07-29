@@ -192,12 +192,17 @@ class Hyperledger extends Node {
     this.studies[studyID].clients.push({ id, res })
 
     this.studies[studyID].request.dataProviders = [0]
-    await this.requestComputation(
-      {
-        ...this.studies[studyID].request,
-        link: link[0],
-        raw_request: this.studies[studyID].raw_request
-      })
+
+    try {
+      await this.requestComputation(
+        {
+          ...this.studies[studyID].request,
+          link: link[0],
+          raw_request: this.studies[studyID].raw_request
+        })
+    } catch (e) {
+      logger.error(e)
+    }
   }
 }
 
