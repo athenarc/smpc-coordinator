@@ -128,7 +128,13 @@ class Hyperledger extends Node {
       try {
         let request = JSON.parse(payload.studydef)
         request = this.normalizeRequest(request)
-        this.studies[payload.studyid] = { responses: 0, confirmationsNeeded: 1, clients: [], request, raw_request: payload.studydef }
+        this.studies[payload.studyid] = {
+          responses: 0,
+          confirmationsNeeded: 1,
+          clients: [],
+          request: { ...request, studyID: payload.studyid, studyName: payload.studyname || '' },
+          raw_request: payload.studydef
+        }
       } catch (e) {
         logger.error('Blockchain computation request error: ', e)
       }
