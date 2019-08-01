@@ -87,6 +87,13 @@ class Node {
     logger[level](`Blockchain: ${message}`)
   }
 
+  catchError (err, method) {
+    if (err instanceof SyntaxError) {
+      logger.error(`Blockchain: ${method} JSON parse error`)
+    } else {
+      logger.error(`Blockchain: ${method}: error`, err)
+    }
+  }
 }
 
 module.exports = Node
