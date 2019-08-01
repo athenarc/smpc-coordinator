@@ -143,26 +143,14 @@ class Hyperledger extends Node {
 
   updateStudy (event, block, txnid, status) {
     this.printInfo(event.event_name, txnid, status)
-    let payload = JSON.parse(event.payload.toString())
-    console.log(payload)
-    console.log(`Payload : ${payload}`)
   }
 
   updateStudyResponse (event, block, txnid, status) {
     this.printInfo(event.event_name, txnid, status)
-    let payload = JSON.parse(event.payload.toString())
-    console.log(payload)
-    console.log(`Payload : ${payload}`)
   }
 
   async registerData (event, block, txnid, status) {
     this.printInfo(event.event_name, txnid, status)
-    let payload = JSON.parse(event.payload.toString())
-
-    console.log(`Payload : ${payload}`)
-
-    const res = await this.query([payload.studyid])
-    console.log('Query result :' + res)
   }
 
   async registerResponse (event, block, txnid, status) {
@@ -172,8 +160,6 @@ class Hyperledger extends Node {
     this.log(`Data registration response. Study ID: ${payload.studyid}`)
 
     let res = await this.query([payload.studyid])
-    console.log('Query result :' + res)
-
     res = JSON.parse(res)
 
     if (res.status === '200') {
