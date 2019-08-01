@@ -132,7 +132,7 @@ class Hyperledger extends Node {
           responses: 0,
           confirmationsNeeded: 1,
           clients: [],
-          request: { ...request, studyID: payload.studyid, studyName: payload.studyname || '' },
+          request: { ...request, studyID: payload.studyid, studyName: payload.studyname || '', tx: txnid },
           raw_request: JSON.parse(payload.studydef)
         }
       }
