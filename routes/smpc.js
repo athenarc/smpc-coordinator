@@ -1,6 +1,6 @@
 const express = require('express')
 
-const { db, addJobToDB } = require('../db')
+const { addJobToDB, getJob } = require('../db')
 const { constructJob } = require('../helpers')
 const { status } = require('../config/constants')
 const { HTTPError } = require('../errors')
@@ -32,7 +32,7 @@ const createSimpleSMPCRouter = (router, path, middlewares) => {
 
 router.get('/queue/:id', async (req, res, next) => {
   try {
-    let value = await db.get(req.params.id)
+    let value = await getJob(req.params.id)
 
     if (value.status !== status.COMPLETED) {
       return res.status(200).json({
@@ -56,7 +56,7 @@ router.get('/queue/:id', async (req, res, next) => {
 
 router.get('/results/:id', async (req, res, next) => {
   try {
-    let value = await db.get(req.params.id)
+    let value = await getJob(req.params.id)
 
     return res.status(200).json({
       ...value,
