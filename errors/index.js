@@ -44,10 +44,18 @@ class InternalError extends AppError {
   }
 }
 
+class ParseError extends AppError {
+  constructor (message) {
+    super(`Parse Error: ${message}`)
+    this.data = { message }
+  }
+}
+
 module.exports = {
   AppError,
   HTTPError,
   ConfigurationError,
   BlockchainError,
-  InternalError
+  InternalError,
+  ParseError
 }
