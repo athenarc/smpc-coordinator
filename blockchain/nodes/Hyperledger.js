@@ -101,7 +101,7 @@ class Hyperledger extends Node {
   }
 
   printInfo (eventName, txnid, status) {
-    logger.info(`Event: ${eventName} transaction ID : ${txnid} Status: ${status}`)
+    this.log(`Event: ${eventName} transaction ID : ${txnid} Status: ${status}`)
   }
 
   async query (params) {
@@ -136,9 +136,9 @@ class Hyperledger extends Node {
           request: { ...request, studyID: payload.studyid, studyName: payload.studyname || '' },
           raw_request: JSON.parse(payload.studydef)
         }
-      } catch (e) {
-        logger.error('Blockchain computation request error: ', e)
       }
+    } catch (e) {
+      this.catchError(e, 'createStudy')
     }
   }
 
@@ -168,8 +168,9 @@ class Hyperledger extends Node {
 
   async registerResponse (event, block, txnid, status) {
     this.printInfo(event.event_name, txnid, status)
+
     let payload = JSON.parse(event.payload.toString())
-    logger.info(`Data registration response. Study ID: ${payload.studyid}`)
+    this.log(`Data registration response. Study ID: ${payload.studyid}`)
 
     let res = await this.query([payload.studyid])
     console.log('Query result :' + res)
@@ -202,7 +203,7 @@ class Hyperledger extends Node {
           raw_request: this.studies[studyID].raw_request
         })
     } catch (e) {
-      logger.error(e)
+      this.catchError(e, 'updateConfirmation')
     }
   }
 }
