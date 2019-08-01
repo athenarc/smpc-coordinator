@@ -117,15 +117,14 @@ class Hyperledger extends Node {
 
   async createStudy (event, block, txnid, status) {
     this.printInfo(event.event_name, txnid, status)
-    let payload = JSON.parse(event.payload.toString())
-    let properties = JSON.parse(payload.purp)
 
-    logger.info(`Study creation request. Study ID: ${payload.studyid}`)
-    const res = await this.query([payload.studyid])
-    console.log('Query result :' + res)
+    try {
+      let payload = JSON.parse(event.payload.toString())
+      let properties = JSON.parse(payload.purp)
 
-    if (properties && properties.smpc) {
-      try {
+      this.log(`createStudy: Study ID: ${payload.studyid}`)
+
+      if (properties && properties.smpc) {
         let request = JSON.parse(payload.studydef)
         request = this.normalizeRequest(request)
 
@@ -184,18 +183,18 @@ class Hyperledger extends Node {
   }
 
   async updateConfirmation (studyID, id, res) {
-    const link = JSON.parse(res.link)
-
-    if (!this.studies.hasOwnProperty(studyID) || !_.isArray(link)) {
-      return
-    }
-
-    this.studies[studyID].responses += 1
-    this.studies[studyID].clients.push({ id, res })
-
-    this.studies[studyID].request.dataProviders = [0]
-
     try {
+      const link = JSON.parse(res.link)
+
+      if (!this.studies.hasOwnProperty(studyID) || !_.isArray(link)) {
+        return
+      }
+
+      this.studies[studyID].responses += 1
+      this.studies[studyID].clients.push({ id, res })
+
+      this.studies[studyID].request.dataProviders = [0]
+
       await this.requestComputation(
         {
           ...this.studies[studyID].request,
