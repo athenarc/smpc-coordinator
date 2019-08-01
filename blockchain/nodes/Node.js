@@ -82,6 +82,11 @@ class Node {
 
     return request
   }
+
+  log (message, level = 'info') {
+    logger[level](`Blockchain: ${message}`)
+  }
+
 }
 
 module.exports = Node
