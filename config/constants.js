@@ -52,6 +52,7 @@ const KEY = fs.readFileSync(process.env.KEY, { encoding: 'utf-8' })
 const REDIS_URL = process.env.REDIS_URL || 'redis://localhost:6379'
 
 const JWT_SECRET = process.env.JWT_SECRET || 'smpc-coordinator jwt secret'
+const AUTH_API = process.env.AUTH_API
 
 module.exports = {
   status: Object.freeze(status),
@@ -63,5 +64,6 @@ module.exports = {
   SMPC_DB_PATH,
   CACHE_DB_PATH,
   USER_DB_PATH,
-  JWT_SECRET
+  JWT_SECRET,
+  AUTH_API
 }
