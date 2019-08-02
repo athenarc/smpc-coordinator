@@ -1,6 +1,9 @@
 const { HTTPError } = require('../errors')
+const logger = require('../config/winston')
 
 const ErrorHandler = (err, req, res, next) => {
+  logger.error('ErrorHandler: ', err)
+
   if (res.headersSent) {
     return next(err)
   }
