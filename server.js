@@ -8,6 +8,7 @@ const session = require('express-session')
 const RedisStore = require('connect-redis')(session)
 const morgan = require('morgan')
 const routes = require('./routes')
+const auth = require('./auth')
 const queue = require('./queue')
 const logger = require('./config/winston')
 const { ErrorHandler, HTTPErrorHandler } = require('./middlewares/error')
@@ -36,6 +37,7 @@ app.queue = queue
   })
 
   app.use(sessionMiddleware)
+  app.use(auth.passport.initialize())
 
   for (const url in routes) {
     app.use(url, routes[url])

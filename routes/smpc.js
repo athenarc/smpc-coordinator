@@ -7,6 +7,7 @@ const { HTTPError } = require('../errors')
 const { addJobToQueue } = require('../queue')
 const validateHistogram = require('../validators/histogram')
 const { processAttributes, processDataProviders, preprocess, cache } = require('../middlewares')
+const auth = require('../auth')
 
 let router = express.Router()
 
@@ -30,7 +31,7 @@ const createSimpleSMPCRouter = (router, path, middlewares) => {
   return router
 }
 
-router.get('/queue/:id', async (req, res, next) => {
+router.get('/queue/:id', [auth.authenticate], async (req, res, next) => {
   try {
     let value = await getJob(req.params.id)
 
@@ -54,7 +55,7 @@ router.get('/queue/:id', async (req, res, next) => {
   }
 })
 
-router.get('/results/:id', async (req, res, next) => {
+router.get('/results/:id', [auth.authenticate], async (req, res, next) => {
   try {
     let value = await getJob(req.params.id)
 
@@ -76,7 +77,7 @@ router.get('/results/:id', async (req, res, next) => {
 router = createSimpleSMPCRouter(
   router,
   '/histogram',
-  [processAttributes, processDataProviders, validateHistogram, preprocess, cache]
+  [auth.authenticate, processAttributes, processDataProviders, validateHistogram, preprocess, cache]
 )
 
 module.exports = router
