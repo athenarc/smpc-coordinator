@@ -1,5 +1,6 @@
 const WebSocket = require('ws')
 
+const logger = require('./config/winston')
 const { appEmitter } = require('./emitters.js')
 const { pack, unpack } = require('./helpers.js')
 const { status } = require('./config/constants')
@@ -19,12 +20,16 @@ const setupWss = async (server, sessionMiddleware) => {
   const wss = new WebSocket.Server({
     server,
     verifyClient: ({ req }, done) => {
+      if (!req.session) {
+        return done(true)
+      }
+
       return sessionMiddleware(req, {}, () => done(req.session.id))
     }
   })
 
   wss.on('connection', (ws, req) => {
-    console.log('Web client connected.')
+    logger.info('Web client connected.')
     ws.req = req
     ws.isAlive = true
 

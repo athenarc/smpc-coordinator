@@ -2,6 +2,7 @@ const uuidv4 = require('uuid/v4')
 const { getFromCache } = require('../cache')
 const { sha256 } = require('../helpers')
 const { getJob, addJobToDB } = require('../db')
+const logger = require('../config/winston')
 
 const cache = async (req, res, next) => {
   const { id: _id, ...rest } = req.body
@@ -24,7 +25,7 @@ const cache = async (req, res, next) => {
       next()
     }
   } catch (e) {
-    console.log(`Cache error: ${e}`)
+    logger.error('Cache error: ', e)
   }
 
   next()

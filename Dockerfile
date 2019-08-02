@@ -22,6 +22,8 @@ COPY . /smpc-coordinator
 WORKDIR /smpc-coordinator
 
 RUN mkdir -p certs
+RUN mkdir -p key_store
+RUN mkdir -p logs 
 
 RUN ./install.sh
 

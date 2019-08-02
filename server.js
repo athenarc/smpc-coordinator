@@ -1,20 +1,4 @@
-require('dotenv').config()
-const _ = require('lodash')
-
-const LISTEN_PORT = process.env.PORT || 3000
-const ENV = process.env.NODE_ENV || 'development'
-
-if (_.isEmpty(process.env.ROOT_CA)) {
-  throw new Error('HTTPS root CA path must be defined!')
-}
-
-if (_.isEmpty(process.env.KEY)) {
-  throw new Error('HTTPS key path must be defined!')
-}
-
-if (_.isEmpty(process.env.CERT)) {
-  throw new Error('HTTPS cert path must be defined!')
-}
+const { ENV, LISTEN_PORT } = require('./config')
 
 const express = require('express')
 const bodyParser = require('body-parser')
@@ -28,11 +12,14 @@ const queue = require('./queue')
 const logger = require('./config/winston')
 const { ErrorHandler, HTTPErrorHandler } = require('./middlewares/error')
 const { setupWss } = require('./ws-server.js')
+const Node = require('./blockchain')('hyperledger')
 
 const app = express()
+const node = new Node()
+
 app.queue = queue
 
-; (() => {
+;(async () => {
   app.set('trust proxy', '127.0.0.1')
   app.disable('x-powered-by')
   app.use(helmet())
@@ -57,9 +44,24 @@ app.queue = queue
   app.use(HTTPErrorHandler)
   app.use(ErrorHandler)
 
+  if (process.env.BLOCKCHAIN === '1') {
+    try {
+      await node.connect()
+      await node.register()
+
+      app.node = node
+    } catch (e) {
+      logger.warn(`Blockchain initialization error: ${e.message}`)
+    }
+  }
+
   const server = app.listen(LISTEN_PORT, () => {
     logger.info('SMPC Coordinator running on port %d', LISTEN_PORT)
   })
 
   setupWss(server, sessionMiddleware)
 })()
+  .catch(err => {
+    logger.error('Server error: ', err)
+    process.exit(1)
+  })

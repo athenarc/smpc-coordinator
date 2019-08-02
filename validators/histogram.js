@@ -7,7 +7,7 @@ const meshAttributes = require('../smpc-global/meshAttributes.json')
 
 const validateHistogram = (req, res, next) => {
   if (!req.body.algorithm) {
-    next(new HTTPError(400, 'Bad request'))
+    next(new HTTPError(400, 'alogorithm: Bad request'))
     return
   }
 

@@ -1,32 +1,22 @@
+const _ = require('lodash')
 const WebSocket = require('ws')
 const EventEmitter = require('events')
 
-const PLAYER_1 = process.env.PLAYER_1 || 'wss://localhost:3005'
-const PLAYER_2 = process.env.PLAYER_2 || 'wss://localhost:3006'
-const PLAYER_3 = process.env.PLAYER_3 || 'wss://localhost:3007'
-const CLIENT_1 = process.env.CLIENT_1 || 'wss://localhost:3008'
-const CLIENT_2 = process.env.CLIENT_2 || 'wss://localhost:3009'
-const CLIENT_3 = process.env.CLIENT_3 || 'wss://localhost:3010'
-
 const { pack, unpack } = require('../helpers')
-const { step, ROOT_CA, KEY, CERT } = require('../config/constants')
+const { step, players, clients, ROOT_CA, KEY, CERT } = require('../config')
+const logger = require('../config/winston')
 
 class Computation {
   constructor (job) {
     this.job = job
     this.emitter = new EventEmitter()
 
-    this.players = [
-      { address: PLAYER_1, socket: null },
-      { address: PLAYER_2, socket: null },
-      { address: PLAYER_3, socket: null }
-    ]
+    this.players = players.map(p => ({ ...p, socket: null }))
+    this.clients = clients
+      .filter(c => _.includes(this.job.data.dataProviders, c.id))
+      .map(c => ({ ...c, socket: null }))
 
-    this.clients = [
-      { address: CLIENT_1, socket: null },
-      { address: CLIENT_2, socket: null },
-      { address: CLIENT_3, socket: null }
-    ]
+    this.job.data.totalClients = this.clients.length
 
     this.state = {
       dataInfoReceived: 0,
@@ -43,7 +33,10 @@ class Computation {
       key: KEY,
       cert: CERT,
       rejectUnauthorized: true,
-      requestCert: true
+      requestCert: true,
+      checkServerIdentity: (host, cert) => {
+        return undefined
+      }
     }
 
     this.resolve = null
@@ -52,7 +45,8 @@ class Computation {
   }
 
   _execute (resolve, reject) {
-    console.log('Initiating SMPC Engine...')
+    logger.info('Initiating SMPC Engine...')
+    logger.info(`Total Clients: ${this.job.data.totalClients}`)
     this.job.reportProgress(0) // Next release will inlude the feature to pass arbitrary data in reportProgress
     // this.job.reportProgress({ step: this.state.step }) // Next release will inlude the feature to pass arbitrary data in reportProgress
     this.resolve = resolve
@@ -92,21 +86,21 @@ class Computation {
 
       ws.on('open', () => {
         ws.send(pack({ message: 'job-info', job: this.job.data }))
-        console.log(`Connected to player ${index}.`)
+        logger.info(`Connected to player ${p.id}.`)
       })
 
       ws.on('close', (code, reason) => {
-        console.log(`Disconnected from player ${index} with code ${code}`)
+        logger.info(`Disconnected from player ${index}.`)
         this.players[ws._index].socket = null
 
         if (this.state.step < step.COMPUTATION_END) {
           this.restart()
-          this.reject(new Error(`Player ${index} closed before the end of the computation. Reason: ${reason}`))
+          this.reject(new Error(`Player ${p.id} closed before the end of the computation. Reason: ${reason}`))
         }
       })
 
       ws.on('error', (err) => {
-        console.log(err)
+        logger.error('Player websocket error: ', err)
         this.handleError(err)
       })
 
@@ -124,17 +118,17 @@ class Computation {
       const ws = this.clients[index].socket
 
       ws.on('open', () => {
-        console.log(`Connected to client ${index}.`)
+        logger.info(`Connected to client ${c.id}.`)
         ws.send(pack({ message: 'job-info', job: this.job.data }))
         ws.send(pack({ message: 'data-info', job: this.job.data }))
       })
 
       ws.on('close', (code, reason) => {
-        console.log(`Disconnected from client ${index} with code ${code}`)
+        logger.info(`Disconnected from client ${index}.`)
         this.clients[ws._index].socket = null
         if (this.state.step < step.IMPORT_END) {
           this.restart()
-          this.reject(new Error(`Client ${index} closed before the end of the importation. Reason: ${reason}`))
+          this.reject(new Error(`Client ${c.id} closed before the end of the importation. Reason: ${reason}`))
         }
       })
 
@@ -144,6 +138,7 @@ class Computation {
       })
 
       ws.on('error', (err) => {
+        logger.error('Client websocket error: ', err)
         this.handleError(err)
       })
     }
@@ -167,12 +162,12 @@ class Computation {
         this.handleError({ data })
         break
       default:
-        console.log(data)
+        logger.info(data)
     }
   }
 
   handleError ({ data }) {
-    console.log(data)
+    logger.error(data)
     this.restart()
     this.reject(new Error('An error has occured!'))
   }
@@ -216,7 +211,7 @@ class Computation {
   handleCompilation ({ data }) {
     this.state.compiled += 1
     if (this.state.compiled === this.players.length) {
-      console.log('Compilation finished.')
+      logger.info('Compilation finished.')
       this.updateStep(step.COMPILE_END)
       this.state.compiled = 0
       this.sendToAll(pack({ message: 'start', job: this.job.data }), this.players)
@@ -224,7 +219,7 @@ class Computation {
   }
 
   handleComputationFinished ({ data }) {
-    console.log('Computation Finished')
+    logger.info('Computation Finished')
     this.updateStep(step.COMPUTATION_END)
     this.state.exit = 0
     this.cleanUpPlayers()
@@ -235,7 +230,6 @@ class Computation {
   }
 
   processResults () {
-
     let results = []
 
     if (this.state.dataInfo.dataSize === 0) {
@@ -258,7 +252,7 @@ class Computation {
   }
 
   handleImportationFinished () {
-    console.log('Importation Finished')
+    logger.info('Importation Finished')
     this.updateStep(step.IMPORT_END)
   }
 
@@ -283,7 +277,7 @@ class Computation {
   listen () {
     this.state.listen += 1
     if (this.state.listen === this.players.length) {
-      console.log('Players are listening...')
+      logger.info('Players are listening...')
       this.updateStep(step.IMPORT_START)
       this.state.listen = 0
       this.sendToAll(pack({ message: 'import', job: this.job.data }), this.clients)

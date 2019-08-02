@@ -1,3 +1,4 @@
+const _ = require('lodash')
 const Computation = require('./Computation')
 const attributes = require('../smpc-global/attributes.json')
 const mapping = require('../smpc-global/mapping.json')
@@ -68,15 +69,16 @@ class HistogramComputation extends Computation {
     return { min: Number(m[0]), max: Number(m[1]) }
   }
 
-  construct2DArray (data, cellsX, cellsY) {
-    let arr = []
-
-    for (let i = 0; i < cellsX; i++) {
-      arr.push([])
-      for (let j = 0; j < cellsY; j++) {
-        arr[i].push(0)
-      }
+  fill (x, y = 0, value = 0) {
+    if (y === 0) {
+      return Array(x).fill(value)
     }
+
+    return Array.from(Array(x), _ => Array(y).fill(value))
+  }
+
+  construct2DArray (data, cellsX, cellsY) {
+    let arr = this.fill(cellsX, cellsY)
 
     for (let i = 0; i < data.length; i++) {
       let b = data[i].replace(/\s/g, '').split(',')
@@ -84,6 +86,11 @@ class HistogramComputation extends Computation {
     }
 
     return arr
+  }
+
+  construct2DArrayFromFlattenArray (data, cellsX, cellsY) {
+    const y = Math.ceil(cellsY / cellsX)
+    return _.chunk(data, y).map(arr => arr.map(i => i.replace(/\s/g, '').split(',')[1]))
   }
 
   getAttributeNames (mesh) {
@@ -133,7 +140,7 @@ class HistogramComputation extends Computation {
     }
 
     if (this.job.data.algorithm === '2d_categorical_histogram') {
-      data = this.construct2DArray(data, this.state.dataInfo.cellsX, this.state.dataInfo.cellsY)
+      data = this.construct2DArrayFromFlattenArray(data, this.state.dataInfo.cellsX, this.state.dataInfo.cellsY)
       results = { z: [...data], labels: { y: this.getAttributeNames(this.job.data.attributes[0].name), x: this.getAttributeNames(this.job.data.attributes[1].name) } }
     }
 

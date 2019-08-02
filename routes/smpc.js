@@ -1,28 +1,26 @@
 const express = require('express')
 
-const { db, addJobToDB } = require('../db')
+const { addJobToDB, getJob } = require('../db')
+const { constructJob } = require('../helpers')
 const { status } = require('../config/constants')
 const { HTTPError } = require('../errors')
 const { addJobToQueue } = require('../queue')
-const processAttributes = require('../middlewares/attributes')
 const validateHistogram = require('../validators/histogram')
-const preprocess = require('../middlewares/preprocess')
-const cache = require('../middlewares/cache')
+const { processAttributes, processDataProviders, preprocess, cache } = require('../middlewares')
 
 let router = express.Router()
 
 const createSimpleSMPCRouter = (router, path, middlewares) => {
   router.post(path, middlewares, async (req, res, next) => {
-    const job = { ...req.body, timestamps: { accepted: Date.now() } }
+    const job = constructJob(req.body)
 
     try {
-      job.status = status.PENDING
       const location = `/api/smpc/queue/${job.id}`
       res.set('Location', location)
       res.status(202).json({ location, ...job, status: status.properties[status.PENDING].msg })
 
-      addJobToDB({ ...job })
-      addJobToQueue({ ...job })
+      await addJobToDB({ ...job })
+      await addJobToQueue({ ...job })
     } catch (err) {
       job.status = status.FAILED
       next(err)
@@ -34,7 +32,7 @@ const createSimpleSMPCRouter = (router, path, middlewares) => {
 
 router.get('/queue/:id', async (req, res, next) => {
   try {
-    let value = await db.get(req.params.id)
+    let value = await getJob(req.params.id)
 
     if (value.status !== status.COMPLETED) {
       return res.status(200).json({
@@ -58,7 +56,7 @@ router.get('/queue/:id', async (req, res, next) => {
 
 router.get('/results/:id', async (req, res, next) => {
   try {
-    let value = await db.get(req.params.id)
+    let value = await getJob(req.params.id)
 
     return res.status(200).json({
       ...value,
@@ -75,6 +73,10 @@ router.get('/results/:id', async (req, res, next) => {
   res.status(200).json()
 })
 
-router = createSimpleSMPCRouter(router, '/histogram', [processAttributes, validateHistogram, preprocess, cache])
+router = createSimpleSMPCRouter(
+  router,
+  '/histogram',
+  [processAttributes, processDataProviders, validateHistogram, preprocess, cache]
+)
 
 module.exports = router
