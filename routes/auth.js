@@ -17,7 +17,7 @@ router.post('/login', async (req, res, next) => {
     await auth.authorizeUser(req.body.username, req.body.token)
     const payload = { username: req.body.username }
     const token = jwt.sign(payload, JWT_SECRET)
-    return res.status(200).json({ jwt_token: token })
+    return res.status(200).json({ username: req.body.username, jwt_token: token })
   } catch (e) {
     if (e instanceof AuthenticationError) {
       return next(new HTTPError(401, e.message))
