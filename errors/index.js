@@ -51,11 +51,19 @@ class ParseError extends AppError {
   }
 }
 
+class AuthenticationError extends AppError {
+  constructor (message) {
+    super(`Authentication Error: ${message}`)
+    this.data = { message }
+  }
+}
+
 module.exports = {
   AppError,
   HTTPError,
   ConfigurationError,
   BlockchainError,
   InternalError,
-  ParseError
+  ParseError,
+  AuthenticationError
 }
