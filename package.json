@@ -38,6 +38,7 @@
     "fabric-ca-client": "1.4.1",
     "fabric-client": "1.4.1",
     "helmet": "^3.15.0",
+    "jsonwebtoken": "^8.5.1",
     "level": "^4.0.0",
     "lodash": "^4.17.11",
     "morgan": "^1.9.1",
