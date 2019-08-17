@@ -14,6 +14,7 @@ const {
 const Node = require('./Node')
 const query = require('../query')
 const logger = require('../../config/winston')
+const { appEmitter } = require('../../emitters.js')
 
 const { BlockchainError } = require('../../errors')
 
@@ -41,6 +42,8 @@ class Hyperledger extends Node {
     this.registerData = this.registerData.bind(this)
     this.registerResponse = this.registerResponse.bind(this)
     this.handleError = this.handleError.bind(this)
+
+    this.computationCompleted = this.computationCompleted.bind(this)
 
     this.events = [
       { name: 'createStudy', onEvent: this.createStudy, onError: this.handleError },
@@ -72,6 +75,10 @@ class Hyperledger extends Node {
     }
   }
 
+  computationCompleted (job) {
+
+  }
+
   _registerEvents () {
     return new Promise((resolve, reject) => {
       this.eventHub = this.channel.newChannelEventHub(this.peer)
@@ -93,6 +100,8 @@ class Hyperledger extends Node {
 
   async register () {
     await this._registerEvents()
+
+    appEmitter.on('computation-completed', this.computationCompleted)
   }
 
   handleError (err) {
