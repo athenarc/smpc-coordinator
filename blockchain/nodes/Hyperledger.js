@@ -1,5 +1,6 @@
 const _ = require('lodash')
 const FabricClient = require('fabric-client')
+const axios = require('axios')
 
 const {
   HYPERLEDGER_CHANNEL,
@@ -10,6 +11,11 @@ const {
   HYPERLEDGER_CERT,
   HYPERLEDGER_KEY_STORE
 } = require('../config')
+
+const {
+  NOTIFICATION_API,
+  NOTIFICATION_API_TOKEN
+} = require('../../config')
 
 const Node = require('./Node')
 const query = require('../query')
@@ -75,7 +81,29 @@ class Hyperledger extends Node {
     }
   }
 
-  computationCompleted (job) {
+  async computationCompleted (job) {
+    if (!this.studies.hasOwnProperty(job.id)) {
+      return
+    }
+
+    const body = {
+      operation: 'mhmdAddSmpcNotification',
+      organisation: 3, // get it from study
+      study_id: job.id
+    }
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${NOTIFICATION_API_TOKEN}`,
+        'Content-Type': 'application/json'
+      }
+    }
+
+    try {
+      const res = await axios.post(NOTIFICATION_API, body, config)
+    } catch (e) {
+      logger.error('Notification API error: ', e)
+    }
 
   }
 
