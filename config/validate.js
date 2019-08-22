@@ -13,6 +13,10 @@ const validateConfiguration = () => {
   if (_.isEmpty(process.env.CERT)) {
     throw new ConfigurationError('HTTPS cert')
   }
+
+  if (_.isEmpty(process.env.AUTH_API)) {
+    throw new ConfigurationError('AUTH_API')
+  }
 }
 
 module.exports = {
