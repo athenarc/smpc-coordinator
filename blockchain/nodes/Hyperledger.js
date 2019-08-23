@@ -105,6 +105,7 @@ class Hyperledger extends Node {
         logger.error(`Notification API error: ${res.data.errorText}`)
       }
 
+      this.log(`Notification server notified about job completion with ID: ${job.id}`)
       delete this.studies[job.id]
     } catch (e) {
       logger.error('Notification API error: ', e)
