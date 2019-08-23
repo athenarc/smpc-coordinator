@@ -101,6 +101,9 @@ class Hyperledger extends Node {
 
     try {
       const res = await axios.post(NOTIFICATION_API, body, config)
+      if (res.data && res.data.errorText) {
+        logger.error(`Notification API error: ${res.data.errorText}`)
+      }
     } catch (e) {
       logger.error('Notification API error: ', e)
     }
