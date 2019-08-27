@@ -43,7 +43,7 @@ const setupWss = async (server, sessionMiddleware) => {
 
     appEmitter.on('update-computation', (msg) => {
       if (ws.readyState === WebSocket.OPEN && msg) {
-        if (msg.status) {
+        if (msg.status && status.properties[msg.status]) {
           msg.status = status.properties[msg.status].msg
         }
         ws.send(pack({ message: 'update-computation', job: msg }))
