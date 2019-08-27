@@ -125,7 +125,9 @@ class HistogramComputation extends Computation {
     if (this.job.data.algorithm === '1d_categorical_histogram') {
       results = data.reduce((previous, current) => {
         const xy = current.replace(/\s/g, '').split(',')
-        previous.y.push(Number(xy[1]))
+        if (!Number.isNaN(Number(xy[1]))) {
+          previous.y.push(Number(xy[1]))
+        }
         return previous
       }, { x: this.getAttributeNames(this.job.data.attributes[0].name), y: [] })
     }
