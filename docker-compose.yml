@@ -14,7 +14,7 @@ services:
       - smpc-cache:/smpc-coordinator/smpc-cache
       - coordinator-logs:/smpc-coordinator/logs
     ports:
-      - "127.0.0.1:3000:3000"
+      - "3000:3000"
     depends_on:
       - redis
     networks:
