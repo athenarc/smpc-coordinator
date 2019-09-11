@@ -41,14 +41,21 @@ const setupWss = async (server, sessionMiddleware) => {
       }
     }) // silent client message
 
-    appEmitter.on('update-computation', (msg) => {
+    const handleComputation = (msg) => {
       if (ws.readyState === WebSocket.OPEN && msg) {
-        if (msg.status) {
+        if (msg.status && status.properties[msg.status]) {
           msg.status = status.properties[msg.status].msg
         }
         ws.send(pack({ message: 'update-computation', job: msg }))
       }
+    }
+
+    ws.on('close', (code, reason) => {
+      logger.info(`Web client disconnected with ${code} and reason ${reason}.`)
+      appEmitter.removeListener('update-computation', handleComputation)
     })
+
+    appEmitter.on('update-computation', handleComputation)
   })
 
   startPing({ wss, interval: 30 * 1000 }) // 30 seconds

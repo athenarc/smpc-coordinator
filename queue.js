@@ -45,6 +45,7 @@ const onSucceeded = async (job, results) => {
   const key = sha256(JSON.stringify({ attributes: job.data.attributes, filters: job.data.filters, algorithm: job.data.algorithm }))
   await addToCache(key, job.data)
   appEmitter.emit('update-computation', { ...job.data })
+  appEmitter.emit('computation-completed', { ...job.data })
 }
 
 queue.on('ready', () => {

@@ -2,11 +2,16 @@ const _ = require('lodash')
 const level = require('level')
 const { appEmitter } = require('./emitters.js')
 const { SMPC_DB_PATH } = require('./config/constants')
+const logger = require('./config/winston')
 
 const db = level(SMPC_DB_PATH, { valueEncoding: 'json' })
 
 appEmitter.on('update-computation', msg => {
-  updateJob(msg)
+  try {
+    updateJob(msg)
+  } catch (e) {
+    logger.error('DB: Update computation failed', e)
+  }
 })
 
 const normalizeDBRecord = rec => {

@@ -30,6 +30,13 @@ class Node {
       const middlewares = [processAttributes, processDataProviders, validateHistogram, preprocess, cache]
       const { req } = this.runMiddlewares(middlewares, request)
       const job = constructJob(req.body)
+
+      if (job.studyID) {
+        // Swap app ID with blockchain's ID
+        job.requestID = job.id
+        job.id = job.studyID
+      }
+
       await addJobToDB({ ...job })
       await addJobToQueue({ ...job })
     } catch (e) {

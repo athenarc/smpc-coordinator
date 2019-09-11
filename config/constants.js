@@ -53,6 +53,9 @@ const REDIS_URL = process.env.REDIS_URL || 'redis://localhost:6379'
 
 const JWT_SECRET = process.env.JWT_SECRET || 'smpc-coordinator jwt secret'
 const AUTH_API = process.env.AUTH_API
+const NOTIFICATION_API = process.env.NOTIFICATION_API
+const NOTIFICATION_API_TOKEN = process.env.NOTIFICATION_API_TOKEN
+const API_BASE_URL = process.env.API_BASE_URL
 
 module.exports = {
   status: Object.freeze(status),
@@ -65,5 +68,8 @@ module.exports = {
   CACHE_DB_PATH,
   USER_DB_PATH,
   JWT_SECRET,
-  AUTH_API
+  AUTH_API,
+  NOTIFICATION_API,
+  NOTIFICATION_API_TOKEN,
+  API_BASE_URL
 }

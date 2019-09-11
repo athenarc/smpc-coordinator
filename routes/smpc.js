@@ -1,4 +1,5 @@
 const express = require('express')
+const contentDisposition = require('content-disposition')
 
 const { addJobToDB, getJob } = require('../db')
 const { constructJob } = require('../helpers')
@@ -55,14 +56,23 @@ router.get('/queue/:id', [auth.authenticate], async (req, res, next) => {
   }
 })
 
-router.get('/results/:id', [auth.authenticate], async (req, res, next) => {
+const getResults = async (req, res, next, download = false) => {
   try {
     let value = await getJob(req.params.id)
-
-    return res.status(200).json({
-      ...value,
-      status: status.properties[value.status].msg
+    value = { ...value, status: status.properties[value.status].msg }
+    res.set({
+      'Content-Type': 'application/json'
     })
+
+    if (download) {
+      res.set({
+        'Content-Disposition': contentDisposition(`${req.params.id}.json`)
+      })
+
+      value = JSON.stringify(value)
+    }
+
+    return res.status(200).send(value)
   } catch (err) {
     if (err.notFound) {
       next(new HTTPError(404, 'Not found'))
@@ -70,8 +80,14 @@ router.get('/results/:id', [auth.authenticate], async (req, res, next) => {
 
     next(err)
   }
+}
 
-  res.status(200).json()
+router.get('/results/:id', [auth.authenticate], async (req, res, next) => {
+  await getResults(req, res, next)
+})
+
+router.get('/:id/download', [], async (req, res, next) => {
+  await getResults(req, res, next, true)
 })
 
 router = createSimpleSMPCRouter(

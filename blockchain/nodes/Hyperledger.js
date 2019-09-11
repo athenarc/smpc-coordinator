@@ -1,5 +1,6 @@
 const _ = require('lodash')
 const FabricClient = require('fabric-client')
+const axios = require('axios')
 
 const {
   HYPERLEDGER_CHANNEL,
@@ -11,9 +12,15 @@ const {
   HYPERLEDGER_KEY_STORE
 } = require('../config')
 
+const {
+  NOTIFICATION_API,
+  NOTIFICATION_API_TOKEN
+} = require('../../config')
+
 const Node = require('./Node')
 const query = require('../query')
 const logger = require('../../config/winston')
+const { appEmitter } = require('../../emitters.js')
 
 const { BlockchainError } = require('../../errors')
 
@@ -41,6 +48,8 @@ class Hyperledger extends Node {
     this.registerData = this.registerData.bind(this)
     this.registerResponse = this.registerResponse.bind(this)
     this.handleError = this.handleError.bind(this)
+
+    this.computationCompleted = this.computationCompleted.bind(this)
 
     this.events = [
       { name: 'createStudy', onEvent: this.createStudy, onError: this.handleError },
@@ -72,6 +81,38 @@ class Hyperledger extends Node {
     }
   }
 
+  async computationCompleted (job) {
+    if (!this.studies.hasOwnProperty(job.id)) {
+      return
+    }
+
+    const body = {
+      operation: 'mhmdAddSmpcNotification',
+      organisation: 3, // get it from study
+      study_id: job.id
+    }
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${NOTIFICATION_API_TOKEN}`,
+        'Content-Type': 'application/json'
+      }
+    }
+
+    try {
+      const res = await axios.post(NOTIFICATION_API, body, config)
+      if (res.data && res.data.errorText) {
+        logger.error(`Notification API error: ${res.data.errorText}`)
+      }
+
+      this.log(`Notification server notified about job completion with ID: ${job.id}`)
+      delete this.studies[job.id]
+    } catch (e) {
+      logger.error('Notification API error: ', e)
+    }
+
+  }
+
   _registerEvents () {
     return new Promise((resolve, reject) => {
       this.eventHub = this.channel.newChannelEventHub(this.peer)
@@ -93,6 +134,8 @@ class Hyperledger extends Node {
 
   async register () {
     await this._registerEvents()
+
+    appEmitter.on('computation-completed', this.computationCompleted)
   }
 
   handleError (err) {
