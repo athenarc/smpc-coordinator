@@ -86,7 +86,7 @@ router.get('/results/:id', [auth.authenticate], async (req, res, next) => {
   await getResults(req, res, next)
 })
 
-router.get('/:id/download', [], async (req, res, next) => {
+router.get('/:id/download', [auth.authenticate], async (req, res, next) => {
   await getResults(req, res, next, true)
 })
 
