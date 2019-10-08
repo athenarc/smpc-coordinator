@@ -31,12 +31,24 @@ const variables = [
   {
     name: 'NOTIFICATION_API',
     errorMsg: 'Notification API url',
-    validate: variable => (process.env.BLOCKCHAIN === '1' && !_.isEmpty(process.env[variable.name]))
+    validate: variable => {
+      if (process.env.BLOCKCHAIN === '0') {
+        return true
+      }
+
+      return !_.isEmpty(process.env[variable.name])
+    }
   },
   {
     name: 'NOTIFICATION_API_TOKEN',
     errorMsg: 'Notification token',
-    validate: variable => (process.env.BLOCKCHAIN === '1' && !_.isEmpty(process.env[variable.name]))
+    validate: variable => {
+      if (process.env.BLOCKCHAIN === '0') {
+        return true
+      }
+
+      return !_.isEmpty(process.env[variable.name])
+    }
   }
 ]
 
