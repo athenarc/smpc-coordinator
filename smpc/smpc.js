@@ -1,9 +1,14 @@
-const HistogramComputation = require('./HistogramComputation')
+const { protocolMapping } = require('../protocols')
 
 const compute = async (job) => {
-  const computation = new HistogramComputation(job)
-  let out = await computation.execute()
-  return out
+  if (protocolMapping.has(job.data.protocol)) {
+    const Protocol = protocolMapping.get(job.data.protocol)
+    const computation = new Protocol(job)
+    let out = await computation.execute()
+    return out
+  } else {
+    throw new Error('Compute: Protocol not supported!')
+  }
 }
 
 module.exports = {

@@ -12,9 +12,10 @@ const auth = require('../auth')
 
 let router = express.Router()
 
-const createSimpleSMPCRouter = (router, path, middlewares) => {
+const createSimpleSMPCRouter = (router, path, middlewares, protocol) => {
   router.post(path, middlewares, async (req, res, next) => {
     const job = constructJob(req.body)
+    job.protocol = protocol
 
     try {
       const location = `/api/smpc/queue/${job.id}`
@@ -93,7 +94,8 @@ router.get('/:id/download', [auth.authenticate], async (req, res, next) => {
 router = createSimpleSMPCRouter(
   router,
   '/histogram',
-  [auth.authenticate, processAttributes, processDataProviders, validateHistogram, preprocess, cache]
+  [auth.authenticate, processAttributes, processDataProviders, validateHistogram, preprocess, cache],
+  'histogram'
 )
 
 module.exports = router
