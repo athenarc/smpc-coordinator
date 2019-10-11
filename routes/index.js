@@ -1,6 +1,7 @@
 const express = require('express')
 const smpc = require('./smpc')
 const queue = require('./queue')
+const results = require('./results')
 const search = require('./search')
 const auth = require('./auth')
 
@@ -13,6 +14,7 @@ module.exports = {
   '/api': router,
   '/api/smpc': smpc,
   '/api/queue': queue,
+  '/api/results': results,
   '/api/search': search,
   '/api/auth': auth
 }
