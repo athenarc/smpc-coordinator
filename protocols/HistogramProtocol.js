@@ -11,7 +11,7 @@ const {
   constructHistogram2DArray,
   histogram2DArrayFromFlattenArray,
   getCatecoricalAttribute
-} = require('../helpers')
+} = require('./helpers')
 
 class HistogramProtocol extends Protocol {
   constructor (job) {
