@@ -12,6 +12,11 @@ const auth = require('../auth')
 
 let router = express.Router()
 
+/*
+ * Deprecated
+ * Use createJobRouter
+*/
+
 const createSimpleSMPCRouter = (router, path, middlewares, protocol) => {
   router.post(path, middlewares, async (req, res, next) => {
     const job = constructJob(req.body)
@@ -32,6 +37,11 @@ const createSimpleSMPCRouter = (router, path, middlewares, protocol) => {
 
   return router
 }
+
+/*
+ * Deprecated
+ * Use api/queue/:id
+*/
 
 router.get('/queue/:id', [auth.authenticate], async (req, res, next) => {
   try {
@@ -83,9 +93,19 @@ const getResults = async (req, res, next, download = false) => {
   }
 }
 
+/*
+ * Deprecated
+ * Use api/results/:id
+*/
+
 router.get('/results/:id', [auth.authenticate], async (req, res, next) => {
   await getResults(req, res, next)
 })
+
+/*
+ * Deprecated
+ * Use api/results/:id/download
+*/
 
 router.get('/:id/download', [auth.authenticate], async (req, res, next) => {
   await getResults(req, res, next, true)
