@@ -1,4 +1,4 @@
-const HistogramProtocol = require('../protocols/HistogramProtocol')
+const HistogramProtocol = require('./HistogramProtocol')
 
 const protocolMapping = new Map()
 
