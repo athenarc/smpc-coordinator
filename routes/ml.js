@@ -2,14 +2,14 @@ const express = require('express')
 
 const { processDataProviders, preprocess } = require('../middlewares')
 const { createJobRouter } = require('./utils')
-const { addJobToDB, getJob } = require('../db')
+const { validateCreation } = require('../validators/ml')
 
 let router = express.Router()
 
 router = createJobRouter(
   router,
   '/blackbox/create',
-  [preprocess],
+  [preprocess, validateCreation],
   'dockerImage'
 )
 
