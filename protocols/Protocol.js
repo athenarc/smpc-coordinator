@@ -5,7 +5,7 @@ const EventEmitter = require('events')
 const { players, clients, ROOT_CA, KEY, CERT } = require('../config')
 
 class Protocol {
-  constructor ({ job, name }) {
+  constructor ({ job, name, opts = { entities: 'both' } }) {
     if (new.target === Protocol) {
       throw new TypeError('Cannot construct abstract Protocol instances directly')
     }
@@ -33,8 +33,13 @@ class Protocol {
       }
     }
 
-    this._initPlayers()
-    this._initClients()
+    if (opts.entities === 'clients' || opts.entities === 'both') {
+      this._initClients()
+    }
+
+    if (opts.entities === 'players' || opts.entities === 'both') {
+      this._initPlayers()
+    }
   }
 
   _validate ({ job }) {
