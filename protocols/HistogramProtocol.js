@@ -2,8 +2,6 @@ const Protocol = require('./Protocol')
 const logger = require('../config/winston')
 const { step } = require('../config')
 const {
-  pack,
-  unpack,
   getNumericCell,
   getCell,
   getAttributeNames,
@@ -11,7 +9,9 @@ const {
   constructHistogram2DArray,
   histogram2DArrayFromFlattenArray,
   getCatecoricalAttribute
-} = require('./helpers')
+} = require('./utils')
+
+const { pack, unpack } = require('../helpers')
 
 class HistogramProtocol extends Protocol {
   constructor (job) {
