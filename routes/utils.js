@@ -5,6 +5,7 @@ const { addJobToQueue } = require('../queue')
 
 const createJobRouter = (router, path, middlewares, protocol) => {
   router.post(path, middlewares, async (req, res, next) => {
+    // Consider making it a middlware in case the job desc is different among routes
     const job = constructJob(req.body)
     job.protocol = protocol
 
