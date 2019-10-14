@@ -1,6 +1,6 @@
 const Queue = require('bee-queue')
 const { URL } = require('url')
-const { compute } = require('./smpc/smpc')
+const { compute } = require('./protocols')
 const { HTTPError } = require('./errors')
 const { status, REDIS_URL } = require('./config/constants')
 const { appEmitter } = require('./emitters.js')
