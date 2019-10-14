@@ -4,6 +4,7 @@ const queue = require('./queue')
 const results = require('./results')
 const search = require('./search')
 const auth = require('./auth')
+const ml = require('./ml')
 
 const router = express.Router()
 
@@ -16,5 +17,6 @@ module.exports = {
   '/api/queue': queue,
   '/api/results': results,
   '/api/search': search,
+  '/api/ml': ml,
   '/api/auth': auth
 }
