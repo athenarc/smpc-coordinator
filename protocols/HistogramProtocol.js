@@ -86,7 +86,6 @@ class HistogramProtocol extends Protocol {
 
   handleError ({ ws, err, entity }) {
     this.restart()
-    this.reject(new Error('An error has occured!'))
   }
 
   handleMessage ({ ws, msg, entity }) {

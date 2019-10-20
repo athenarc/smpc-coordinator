@@ -148,6 +148,8 @@ class Protocol {
   _errorDecorator ({ ws, err, entity }) {
     logger.error(err)
     this.handleError({ ws, err, entity })
+    // TODO: Get messages from err if exist
+    this.reject(new Error('An error has occured!'))
   }
 
   _messageDecorator ({ ws, msg, entity }) {
