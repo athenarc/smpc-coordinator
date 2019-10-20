@@ -89,7 +89,6 @@ class HistogramProtocol extends Protocol {
   }
 
   handleMessage ({ ws, msg, entity }) {
-    msg = unpack(msg)
     switch (msg.message) {
       case 'data-info':
         this.emitter.emit('data-info-received', { entity, ws, msg })

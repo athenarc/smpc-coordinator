@@ -4,7 +4,7 @@ const EventEmitter = require('events')
 
 const logger = require('../config/winston')
 const { players, clients, ROOT_CA, KEY, CERT } = require('../config')
-const { pack } = require('../helpers')
+const { pack, unpack } = require('../helpers')
 
 class Protocol {
   constructor ({ job, name, opts = { entities: 'both' } }) {
@@ -153,6 +153,7 @@ class Protocol {
   }
 
   _messageDecorator ({ ws, msg, entity }) {
+    msg = unpack(msg)
     this.handleMessage({ ws, msg, entity })
   }
 
