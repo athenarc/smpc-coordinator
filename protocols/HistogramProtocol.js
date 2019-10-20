@@ -67,41 +67,24 @@ class HistogramProtocol extends Protocol {
   }
 
   handleOpen ({ ws, entity }) {
-    if (entity.type === 'player') {
-      logger.info(`Connected to player ${entity.id}.`)
-      ws.send(pack({ message: 'job-info', job: this.job.data }))
-    }
-
     if (entity.type === 'client') {
-      logger.info(`Connected to client ${entity.id}.`)
-      ws.send(pack({ message: 'job-info', job: this.job.data }))
       ws.send(pack({ message: 'data-info', job: this.job.data }))
     }
   }
 
   handleClose ({ ws, code, reason, entity }) {
-    if (entity.type === 'player') {
-      logger.info(`Disconnected from player ${entity.id}.`)
-      this.players[ws._index].socket = null
-
-      if (this.state.step < step.COMPUTATION_END) {
-        this.restart()
-        this.reject(new Error(`Player ${entity.id} closed before the end of the computation. Reason: ${reason}`))
-      }
+    if (entity.type === 'player' && this.state.step < step.COMPUTATION_END) {
+      this.restart()
+      this.reject(new Error(`Player ${entity.id} closed before the end of the computation. Reason: ${reason}`))
     }
 
-    if (entity.type === 'client') {
-      logger.info(`Disconnected from client ${entity.id}.`)
-      this.clients[ws._index].socket = null
-      if (this.state.step < step.IMPORT_END) {
-        this.restart()
-        this.reject(new Error(`Client ${entity.id} closed before the end of the importation. Reason: ${reason}`))
-      }
+    if (entity.type === 'client' && this.state.step < step.IMPORT_END) {
+      this.restart()
+      this.reject(new Error(`Client ${entity.id} closed before the end of the importation. Reason: ${reason}`))
     }
   }
 
   handleError ({ ws, err, entity }) {
-    logger.error(err)
     this.restart()
     this.reject(new Error('An error has occured!'))
   }

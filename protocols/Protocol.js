@@ -2,7 +2,9 @@ const _ = require('lodash')
 const WebSocket = require('ws')
 const EventEmitter = require('events')
 
+const logger = require('../config/winston')
 const { players, clients, ROOT_CA, KEY, CERT } = require('../config')
+const { pack } = require('../helpers')
 
 class Protocol {
   constructor ({ job, name, opts = { entities: 'both' } }) {
@@ -55,13 +57,13 @@ class Protocol {
 
     const ws = this[key][index].socket
 
-    ws.on('open', () => this.handleOpen({ ws, entity }))
+    ws.on('open', () => this._openDecorator({ ws, entity }))
 
-    ws.on('close', (code, reason) => this.handleClose({ ws, code, reason, entity }))
+    ws.on('close', (code, reason) => this._closeDecorator({ ws, code, reason, entity }))
 
-    ws.on('error', (err) => this.handleError({ ws, err, entity }))
+    ws.on('error', (err) => this._errorDecorator({ ws, err, entity }))
 
-    ws.on('message', (msg) => this.handleMessage({ ws, msg, entity }))
+    ws.on('message', (msg) => this._messageDecorator({ ws, msg, entity }))
   }
 
   _initPlayers () {
@@ -106,6 +108,44 @@ class Protocol {
         e.socket.close(1000)
       }
     }
+  }
+
+  /* Decorators */
+  _openDecorator ({ ws, entity }) {
+    if (entity.type === 'player') {
+      logger.info(`Connected to player ${entity.id}.`)
+      ws.send(pack({ message: 'job-info', job: this.job.data }))
+    }
+
+    if (entity.type === 'client') {
+      logger.info(`Connected to client ${entity.id}.`)
+      ws.send(pack({ message: 'job-info', job: this.job.data }))
+    }
+
+    this.handleOpen({ ws, entity })
+  }
+
+  _closeDecorator ({ ws, code, reason, entity }) {
+    if (entity.type === 'player') {
+      logger.info(`Disconnected from player ${entity.id}.`)
+      this.players[ws._index].socket = null
+    }
+
+    if (entity.type === 'client') {
+      logger.info(`Disconnected from client ${entity.id}.`)
+      this.clients[ws._index].socket = null
+    }
+
+    this.handleClose({ ws, code, reason, entity })
+  }
+
+  _errorDecorator ({ ws, err, entity }) {
+    logger.error(err)
+    this.handleError({ ws, err, entity })
+  }
+
+  _messageDecorator ({ ws, msg, entity }) {
+    this.handleMessage({ ws, msg, entity })
   }
 
   /* Abstract Methods */
