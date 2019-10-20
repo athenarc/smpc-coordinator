@@ -196,12 +196,6 @@ class HistogramProtocol extends Protocol {
     this.updateStep(step.IMPORT_END)
   }
 
-  restart () {
-    const msg = pack({ message: 'restart', job: this.job.data })
-    this.sendToAll(msg, this.players)
-    this.sendToAll(msg, this.clients)
-  }
-
   listen () {
     this.state.listen += 1
     if (this.state.listen === this.players.length) {

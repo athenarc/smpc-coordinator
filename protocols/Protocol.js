@@ -110,6 +110,12 @@ class Protocol {
     }
   }
 
+  restart () {
+    const msg = pack({ message: 'restart', job: this.job.data })
+    this.sendToAll(msg, this.players)
+    this.sendToAll(msg, this.clients)
+  }
+
   /* Decorators */
   _openDecorator ({ ws, entity }) {
     if (entity.type === 'player') {
