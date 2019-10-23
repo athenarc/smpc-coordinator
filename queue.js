@@ -58,7 +58,6 @@ queue.on('ready', () => {
       const results = await compute(job)
       return results
     } catch (e) {
-      console.error(e)
       throw new Error(e.message)
     }
   })

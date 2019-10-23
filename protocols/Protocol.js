@@ -94,6 +94,11 @@ class Protocol {
     }
   }
 
+  close () {
+    this.cleanUpClients()
+    this.cleanUpPlayers()
+  }
+
   cleanUpClients () {
     this.cleanUp(this.clients)
   }
@@ -146,15 +151,27 @@ class Protocol {
   }
 
   _errorDecorator ({ ws, err, entity }) {
-    logger.error(err)
     this.handleError({ ws, err, entity })
-    // TODO: Get messages from err if exist
-    this.reject(new Error('An error has occured!'))
+    this.error({ ws, err, entity })
   }
 
   _messageDecorator ({ ws, msg, entity }) {
     msg = unpack(msg)
+
+    if (msg.message === 'error') {
+      this._errorDecorator({ ws, err: msg.error, entity })
+      return
+    }
+
     this.handleMessage({ ws, msg, entity })
+  }
+
+  error ({ ws, err, entity }) {
+    this.close()
+    let errorMessage = (err && err.message) || 'An error has occured'
+    const error = `Error at entity ${entity.type} with ID ${entity.id}. Message: ${errorMessage}`
+    logger.error(error)
+    this.reject(new Error(error))
   }
 
   /* Abstract Methods */

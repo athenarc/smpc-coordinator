@@ -52,18 +52,13 @@ class HistogramProtocol extends Protocol {
     this.emitter.on('importation-finished', (msg) => this._eventMiddleware('importation-finished', msg, this.handleImportationFinished.bind(this)))
   }
 
-  _eventMiddleware (event, msg, next) {
-    if (msg.data) {
-      if (msg.data.errors && msg.data.errors.length > 0) {
-        return this.handleError({ err: new Error(msg) })
-      }
-
-      if (msg.data.code && msg.data.code !== 0) {
-        return this.handleError({ err: new Error(msg) })
-      }
+  _eventMiddleware (event, data, next) {
+    const { ws, entity, msg } = data
+    if (msg && msg.code && msg.code !== 0) {
+      return this.error({ ws, err: { message: `Entity ${entity.type} exitted with code ${msg.code}. Errors: ${msg.error.message}` }, entity })
     }
 
-    next(msg)
+    next(data)
   }
 
   handleOpen ({ ws, entity }) {
@@ -75,11 +70,13 @@ class HistogramProtocol extends Protocol {
   handleClose ({ ws, code, reason, entity }) {
     if (entity.type === 'player' && this.state.step < step.COMPUTATION_END) {
       this.restart()
+      // this.close()
       this.reject(new Error(`Player ${entity.id} closed before the end of the computation. Reason: ${reason}`))
     }
 
     if (entity.type === 'client' && this.state.step < step.IMPORT_END) {
       this.restart()
+      // this.close()
       this.reject(new Error(`Client ${entity.id} closed before the end of the importation. Reason: ${reason}`))
     }
   }
@@ -101,9 +98,6 @@ class HistogramProtocol extends Protocol {
         break
       case 'exit':
         this.emitter.emit('exit', { entity, ws, msg })
-        break
-      case 'error':
-        this.handleError({ msg })
         break
       default:
         logger.info(msg)
