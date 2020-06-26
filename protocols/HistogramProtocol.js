@@ -2,8 +2,6 @@ const Protocol = require('./Protocol')
 const logger = require('../config/winston')
 const { step } = require('../config')
 const {
-  pack,
-  unpack,
   getNumericCell,
   getCell,
   getAttributeNames,
@@ -11,7 +9,9 @@ const {
   constructHistogram2DArray,
   histogram2DArrayFromFlattenArray,
   getCatecoricalAttribute
-} = require('../helpers')
+} = require('./utils')
+
+const { pack, unpack } = require('../helpers')
 
 class HistogramProtocol extends Protocol {
   constructor (job) {
@@ -52,62 +52,40 @@ class HistogramProtocol extends Protocol {
     this.emitter.on('importation-finished', (msg) => this._eventMiddleware('importation-finished', msg, this.handleImportationFinished.bind(this)))
   }
 
-  _eventMiddleware (event, msg, next) {
-    if (msg.data) {
-      if (msg.data.errors && msg.data.errors.length > 0) {
-        return this.handleError({ err: new Error(msg) })
-      }
-
-      if (msg.data.code && msg.data.code !== 0) {
-        return this.handleError({ err: new Error(msg) })
-      }
+  _eventMiddleware (event, data, next) {
+    const { ws, entity, msg } = data
+    if (msg && msg.code && msg.code !== 0) {
+      return this.error({ ws, err: { message: `Entity ${entity.type} exitted with code ${msg.code}. Errors: ${msg.error.message}` }, entity })
     }
 
-    next(msg)
+    next(data)
   }
 
   handleOpen ({ ws, entity }) {
-    if (entity.type === 'player') {
-      logger.info(`Connected to player ${entity.id}.`)
-      ws.send(pack({ message: 'job-info', job: this.job.data }))
-    }
-
     if (entity.type === 'client') {
-      logger.info(`Connected to client ${entity.id}.`)
-      ws.send(pack({ message: 'job-info', job: this.job.data }))
       ws.send(pack({ message: 'data-info', job: this.job.data }))
     }
   }
 
   handleClose ({ ws, code, reason, entity }) {
-    if (entity.type === 'player') {
-      logger.info(`Disconnected from player ${entity.id}.`)
-      this.players[ws._index].socket = null
-
-      if (this.state.step < step.COMPUTATION_END) {
-        this.restart()
-        this.reject(new Error(`Player ${entity.id} closed before the end of the computation. Reason: ${reason}`))
-      }
+    if (entity.type === 'player' && this.state.step < step.COMPUTATION_END) {
+      this.restart()
+      // this.close()
+      this.reject(new Error(`Player ${entity.id} closed before the end of the computation. Reason: ${reason}`))
     }
 
-    if (entity.type === 'client') {
-      logger.info(`Disconnected from client ${entity.id}.`)
-      this.clients[ws._index].socket = null
-      if (this.state.step < step.IMPORT_END) {
-        this.restart()
-        this.reject(new Error(`Client ${entity.id} closed before the end of the importation. Reason: ${reason}`))
-      }
+    if (entity.type === 'client' && this.state.step < step.IMPORT_END) {
+      this.restart()
+      // this.close()
+      this.reject(new Error(`Client ${entity.id} closed before the end of the importation. Reason: ${reason}`))
     }
   }
 
   handleError ({ ws, err, entity }) {
-    logger.error(err)
     this.restart()
-    this.reject(new Error('An error has occured!'))
   }
 
   handleMessage ({ ws, msg, entity }) {
-    msg = unpack(msg)
     switch (msg.message) {
       case 'data-info':
         this.emitter.emit('data-info-received', { entity, ws, msg })
@@ -120,9 +98,6 @@ class HistogramProtocol extends Protocol {
         break
       case 'exit':
         this.emitter.emit('exit', { entity, ws, msg })
-        break
-      case 'error':
-        this.handleError({ msg })
         break
       default:
         logger.info(msg)
@@ -211,12 +186,6 @@ class HistogramProtocol extends Protocol {
   handleImportationFinished () {
     logger.info('Importation Finished')
     this.updateStep(step.IMPORT_END)
-  }
-
-  restart () {
-    const msg = pack({ message: 'restart', job: this.job.data })
-    this.sendToAll(msg, this.players)
-    this.sendToAll(msg, this.clients)
   }
 
   listen () {

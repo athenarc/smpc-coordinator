@@ -18,10 +18,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/Athena-MHMD/smpc-coordinator.git"
+    "url": "https://github.com/athenarc/smpc-coordinator.git"
   },
-  "homepage": "https://github.com/Athena-MHMD/smpc-coordinator",
-  "bugs": "https://github.com/Athena-MHMD/smpc-coordinator/issues",
+  "homepage": "https://github.com/athenarc/smpc-coordinator",
+  "bugs": "https://github.com/athenarc/smpc-coordinator/issues",
   "license": "MIT",
   "standard": {
     "ignore": []

@@ -2,10 +2,12 @@ const _ = require('lodash')
 const WebSocket = require('ws')
 const EventEmitter = require('events')
 
+const logger = require('../config/winston')
 const { players, clients, ROOT_CA, KEY, CERT } = require('../config')
+const { pack, unpack } = require('../helpers')
 
 class Protocol {
-  constructor ({ job, name }) {
+  constructor ({ job, name, opts = { entities: 'both' } }) {
     if (new.target === Protocol) {
       throw new TypeError('Cannot construct abstract Protocol instances directly')
     }
@@ -33,8 +35,13 @@ class Protocol {
       }
     }
 
-    this._initPlayers()
-    this._initClients()
+    if (opts.entities === 'clients' || opts.entities === 'both') {
+      this._initClients()
+    }
+
+    if (opts.entities === 'players' || opts.entities === 'both') {
+      this._initPlayers()
+    }
   }
 
   _validate ({ job }) {
@@ -50,13 +57,13 @@ class Protocol {
 
     const ws = this[key][index].socket
 
-    ws.on('open', () => this.handleOpen({ ws, entity }))
+    ws.on('open', () => this._openDecorator({ ws, entity }))
 
-    ws.on('close', (code, reason) => this.handleClose({ ws, code, reason, entity }))
+    ws.on('close', (code, reason) => this._closeDecorator({ ws, code, reason, entity }))
 
-    ws.on('error', (err) => this.handleError({ ws, err, entity }))
+    ws.on('error', (err) => this._errorDecorator({ ws, err, entity }))
 
-    ws.on('message', (msg) => this.handleMessage({ ws, msg, entity }))
+    ws.on('message', (msg) => this._messageDecorator({ ws, msg, entity }))
   }
 
   _initPlayers () {
@@ -87,6 +94,11 @@ class Protocol {
     }
   }
 
+  close () {
+    this.cleanUpClients()
+    this.cleanUpPlayers()
+  }
+
   cleanUpClients () {
     this.cleanUp(this.clients)
   }
@@ -101,6 +113,65 @@ class Protocol {
         e.socket.close(1000)
       }
     }
+  }
+
+  restart () {
+    const msg = pack({ message: 'restart', job: this.job.data })
+    this.sendToAll(msg, this.players)
+    this.sendToAll(msg, this.clients)
+  }
+
+  /* Decorators */
+  _openDecorator ({ ws, entity }) {
+    if (entity.type === 'player') {
+      logger.info(`Connected to player ${entity.id}.`)
+      ws.send(pack({ message: 'job-info', job: this.job.data }))
+    }
+
+    if (entity.type === 'client') {
+      logger.info(`Connected to client ${entity.id}.`)
+      ws.send(pack({ message: 'job-info', job: this.job.data }))
+    }
+
+    this.handleOpen({ ws, entity })
+  }
+
+  _closeDecorator ({ ws, code, reason, entity }) {
+    if (entity.type === 'player') {
+      logger.info(`Disconnected from player ${entity.id}.`)
+      this.players[ws._index].socket = null
+    }
+
+    if (entity.type === 'client') {
+      logger.info(`Disconnected from client ${entity.id}.`)
+      this.clients[ws._index].socket = null
+    }
+
+    this.handleClose({ ws, code, reason, entity })
+  }
+
+  _errorDecorator ({ ws, err, entity }) {
+    this.handleError({ ws, err, entity })
+    this.error({ ws, err, entity })
+  }
+
+  _messageDecorator ({ ws, msg, entity }) {
+    msg = unpack(msg)
+
+    if (msg.message === 'error') {
+      this._errorDecorator({ ws, err: msg.error, entity })
+      return
+    }
+
+    this.handleMessage({ ws, msg, entity })
+  }
+
+  error ({ ws, err, entity }) {
+    this.close()
+    let errorMessage = (err && err.message) || 'An error has occured'
+    const error = `Error at entity ${entity.type} with ID ${entity.id}. Message: ${errorMessage}`
+    logger.error(error)
+    this.reject(new Error(error))
   }
 
   /* Abstract Methods */
