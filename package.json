@@ -49,7 +49,7 @@
     "standard": "^12.0.1",
     "uuid": "^3.3.2",
     "winston": "^3.2.1",
-    "ws": "^6.2.1"
+    "ws": "^7.4.6"
   },
   "devDependencies": {
     "nodemon": "^1.18.9",
